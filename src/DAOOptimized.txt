@@ -7,11 +7,12 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 
 /// @title DAOOptimized - Gas-Enhanced, Secure DAO
-contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTimelockControl, GovernorVotesQuorumFraction {
+contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTimelockControl, GovernorVotesQuorumFraction, GovernorCountingSimple {
      ERC20Votes private _token;
-     function token() public view override(Governor, GovernorVotes) returns (IERC5805) { return _token; }
+     function token() public view override(GovernorVotes) returns (IERC5805) { return _token; }
 
     // --- GAS METRICS EXPOSURE ---
     uint256 public gasUsed_lastProposalCreate;
@@ -28,44 +29,31 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
     )
         Governor("DAOOptimized")
         GovernorSettings(uint32(_votingDelay), uint32(_votingPeriod), uint48(_proposalThreshold))
-        GovernorVotes(_token)
+        GovernorVotes(_votingToken)
         GovernorTimelockControl(_timelock)
         GovernorVotesQuorumFraction(_quorumNumerator)
     
-    {token = _votingToken;}
-
-     struct ProposalVote {
-        uint256 forVotes;
-        uint256 againstVotes;
-        uint256 abstainVotes;
-        uint256 snapshotId;
-        mapping(address => bool) hasVoted;
-    }
-
+    {_token = _votingToken;}
+   
     mapping(uint256 => ProposalVote) private _proposalVotes;
-
-
-    // --- COUNTING MODE MICRO-OPTIMIZATION ---
-    function COUNTING_MODE() public pure override returns (string memory) {
-        return "simple";
-    }
 
     // --- CUSTOM QUORUM OPTIMIZATION ---
     function _quorumReached(uint256 proposalId)
         internal
         view
-        override
+        override (Governor, GovernorCountingSimple)
         returns (bool)
     {
         ProposalVote storage p = _proposalVotes[proposalId];
-        uint256 supply = token.getPastTotalSupply(p.snapshotId);
+        uint256 snapshotBlockOrTimestamp = proposalSnapshot(proposalId);
+        uint256 supply = _token.getPastTotalSupply(snapshotBlockOrTimestamp);
         return p.forVotes * 100 >= supply * quorumNumerator(); // cheap multiplication
     }
 
     // --- GAS-MONITORING HOOKS ---
     function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
         public
-        override(Governor, GovernorTimelockControl)
+        override(Governor)
         returns (uint256)
     {
         uint256 startGas = gasleft();
@@ -74,23 +62,6 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
         return proposalId;
     }
 
-
-    function _countVote(
-    uint256 proposalId,
-    address account,
-    uint8 support,
-    uint256 weight
-    ) internal override(Governor) {
-    super._countVote(proposalId, account, support, weight);
-    }
-
-    function _voteSucceeded(uint256 proposalId) internal view override(Governor) returns (bool) {
-    return super._voteSucceeded(proposalId);
-    }
-
-    function hasVoted(uint256 proposalId, address account) public view override(Governor) returns (bool) {
-    return super.hasVoted(proposalId, account);
-    }
 
     function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
     return super.proposalThreshold();
@@ -108,6 +79,12 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
         return super.votingPeriod();
     }
 
+
+    // This is required by the IGovernor interface.
+    function COUNTING_MODE() public pure override(GovernorCountingSimple, IGovernor) returns (string memory) {
+        return "support=bravo";
+    }
+
     function _cancel(
         address[] memory targets,
         uint256[] memory values,
@@ -118,55 +95,48 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
     }
 
     // --- OVERRIDES REQUIRED BY OZ GOVERNOR ---
-    function _executor()
-        internal
-        view
-        override(Governor, GovernorTimelockControl)
-        returns (address)
+    function _executor() internal view override(Governor, GovernorTimelockControl) returns (address)
     {
         return super._executor();
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(Governor, GovernorTimelockControl)
-        returns (bool)
+    function supportsInterface(bytes4 interfaceId) public view override(Governor) returns (bool)
     {
         return super.supportsInterface(interfaceId);
     }
     
     function _executeOperations(
-        uint256 proposalId,
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
+    uint256 proposalId,
+    address[] memory targets,
+    uint256[] memory values,
+    bytes[] memory calldatas,
+    bytes32 descriptionHash
     ) internal override(Governor, GovernorTimelockControl) {
-        super._executeOperations(proposalId, targets, values, calldatas, descriptionHash);
+    uint256 startGas = gasleft();
+    // Inline assembly call for real gas savings (Your existing logic)
+    for (uint256 i = 0; i < targets.length; i++) {
+        address target = targets[i];
+        uint256 value = values[i];
+        bytes memory data = calldatas[i];
+        bool ok;
+        assembly {
+            // Assembly block (Your original code)
+            ok := call(gas(), target, value, add(data, 32), mload(data), 0, 0)
+        }
+        require(ok, "DAOOptimized: target call failed");
+    }
+    gasUsed_lastExecute = startGas - gasleft();
     }
 
     function _queueOperations(
-        uint256 proposalId,
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) {
-    uint256 startGas = gasleft();
-        // Inline assembly call for real gas savings (Your existing logic)
-        for (uint256 i = 0; i < targets.length; i++) {
-            address target = targets[i];
-            uint256 value = values[i];
-            bytes memory data = calldatas[i];
-            bool ok;
-            assembly {
-                // Assembly block (Your original code)
-                ok := call(gas(), target, value, add(data, 32), mload(data), 0, 0)
-            }
-            require(ok, "DAOOptimized: target call failed");
-        }
-        gasUsed_lastExecute = startGas - gasleft();
+    uint256 proposalId,
+    address[] memory targets,
+    uint256[] memory values,
+    bytes[] memory calldatas,
+    bytes32 descriptionHash
+    ) internal override(Governor, GovernorTimelockControl) returns (uint48) { // <--- Added return type
+    // It should call the parent to queue the proposal with the timelock
+    return super._queueOperations(proposalId, targets, values, calldatas, descriptionHash);
     }
 
     function proposalNeedsQueuing(uint256 proposalId)
@@ -177,3 +147,5 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
     {
         return super.proposalNeedsQueuing(proposalId);
     
+    }
+    }

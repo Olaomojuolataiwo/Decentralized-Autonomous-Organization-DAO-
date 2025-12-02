@@ -11,8 +11,6 @@ import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol
 
 /// @title DAOOptimized - Gas-Enhanced, Secure DAO
 contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTimelockControl, GovernorVotesQuorumFraction, GovernorCountingSimple {
-     ERC20Votes private _token;
-     function token() public view override(GovernorVotes) returns (IERC5805) { return _token; }
 
     // --- GAS METRICS EXPOSURE ---
     uint256 public gasUsed_lastProposalCreate;
@@ -32,8 +30,7 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
         GovernorVotes(_votingToken)
         GovernorTimelockControl(_timelock)
         GovernorVotesQuorumFraction(_quorumNumerator)
-    
-    {_token = _votingToken;}
+   {} 
    
     mapping(uint256 => ProposalVote) private _proposalVotes;
 
@@ -46,7 +43,7 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
     {
         ProposalVote storage p = _proposalVotes[proposalId];
         uint256 snapshotBlockOrTimestamp = proposalSnapshot(proposalId);
-        uint256 supply = _token.getPastTotalSupply(snapshotBlockOrTimestamp);
+        uint256 supply = token.getPastTotalSupply(snapshotBlockOrTimestamp);
         return p.forVotes * 100 >= supply * quorumNumerator(); // cheap multiplication
     }
 
