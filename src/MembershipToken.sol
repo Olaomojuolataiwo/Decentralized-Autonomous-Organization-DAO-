@@ -38,4 +38,5 @@ contract MembershipToken is ERC20, ERC20Permit, ERC20Votes, Ownable {
     {
         return super.nonces(owner);
     }
+
 }

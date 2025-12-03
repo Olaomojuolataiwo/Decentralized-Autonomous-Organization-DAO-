@@ -41,10 +41,15 @@ contract DAOOptimized is Governor, GovernorSettings, GovernorVotes, GovernorTime
         override (Governor, GovernorCountingSimple)
         returns (bool)
     {
-        ProposalVote storage p = _proposalVotes[proposalId];
-        uint256 snapshotBlockOrTimestamp = proposalSnapshot(proposalId);
-        uint256 supply = token.getPastTotalSupply(snapshotBlockOrTimestamp);
-        return p.forVotes * 100 >= supply * quorumNumerator(); // cheap multiplication
+        uint256 snapshot = proposalSnapshot(proposalId);
+    uint256 quorumVotes = quorum(snapshot);
+
+    uint256 totalVotesCast =
+        _proposalVotes[proposalId].forVotes +
+        _proposalVotes[proposalId].againstVotes +
+        _proposalVotes[proposalId].abstainVotes;
+
+    return totalVotesCast >= quorumVotes;
     }
 
     // --- GAS-MONITORING HOOKS ---
