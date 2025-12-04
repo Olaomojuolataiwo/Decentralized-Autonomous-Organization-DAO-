@@ -1,0 +1,297 @@
+{
+  "timestamp": 1764791925,
+  "chain_id": 11155111,
+  "rpc": "https://eth-sepolia.g.alchemy.com/v2/F8X3H2cE64aIbdybBl01B",
+  "token": "0x8468f201FEE551a0EFDB0b2d41876312fc21a63C",
+  "owner": "0x1f9162aDf495696C72Be2473e62C51B7B6fd2E50",
+  "num_members": 120,
+  "per_member_amount": "300000000000000000000000",
+  "total_distributed": "36000000000000000000000000",
+  "remainder_for_owner": "64000000000000000000000000",
+  "mint_txs": [
+    {
+      "member": "0x943763895d3f448F28c7a98cCD4183fC70dbD9D9",
+      "mint_tx": "addc90c50704e9a4dceab96a011ff07e9f8588641e2d03fd479629d9f328dc78",
+      "mint_gasUsed": 71936,
+      "mint_blockNumber": 9762349,
+      "delegate_tx": "70f65d7ad7e46bdc171e2092e0493eede6a1ea043075d346a785502bb62ceab7",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762350
+    },
+    {
+      "member": "0x1f49FB4167942C54366E62c204De7873Cb52B1b4",
+      "mint_tx": "b36ffdb1a0d5315f4b17ab54e5dedcf028155bf8b6cf36f4a6fa2ad2356c7a61",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762351,
+      "delegate_tx": "96aa054eef670108a678e21caee9712a138d7ff2de9bf55f3697ed5f9bc6e6a6",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762353
+    },
+    {
+      "member": "0x92b0b8C4e8D82E856dBe390ea4CedF1049d246C0",
+      "mint_tx": "b118ed90607540b3c94f3579edaabcb2002efdaf88514f9323c7a3bb6d7cf5e5",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762354,
+      "delegate_tx": "540746aac616c323dba2e210333d4b378ebb00ad6ed4084f3336b8fdb5e758ee",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762355
+    },
+    {
+      "member": "0x09e1239E622e637007566DC33F9C8f1f580e1dE5",
+      "mint_tx": "37ee65a6121be4c05fcf07a9d6e07bf26a3973707ea236ea156dedb1c8064721",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762356,
+      "delegate_tx": "35eafd9fb24e13e1df4cd80edf38ffe11d19b4f7863cd730557df6df1a6df6a8",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762358
+    },
+    {
+      "member": "0x3a546e8Df65Ec070D2491d346312FeE59D7f77a8",
+      "mint_tx": "94707d0773a1c84a3d963b72354ffc8a9af4fce361ec9291022589bd0e8a8fd6",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762359,
+      "delegate_tx": "130fea3454fa06a98e36dc982a905e4f059146c78bdf11d9a840f42d989e60c0",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762360
+    },
+    {
+      "member": "0x5ffB308FD9B33DAb72Cd920f0bCa4697095f23aF",
+      "mint_tx": "d00646d36909a6e15c156e4cb759b02c81fe28813c328c12c438967dbd81e8c2",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762368,
+      "delegate_tx": "3b501105963b8f37f9ff271c6ede5119d14bf41acf28a354c13e810d33733de3",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762374
+    },
+    {
+      "member": "0x7B3a9e4aeF01fAE859AfB900aaE7bDDC2924d8d7",
+      "mint_tx": "eb97221aae1c60e876809e405578e68f5ad7d4eb5a92a7e79bb5650d6b00970c",
+      "mint_gasUsed": 89024,
+      "mint_blockNumber": 9762375,
+      "delegate_tx": "36cb6a860fcd6943f72e8b9d148165071be59f1df4f990b1100a115ede677f4a",
+      "delegate_gasUsed": 31167,
+      "delegate_blockNumber": 9762376
+    },
+    {
+      "member": "0x597156CebbDc9DEE765a20c668Bc8E4E91376803",
+      "mint_tx": "297ccba45653582bd4160fc74ad35f11a8a13926ef30b18c355f2bf2f44ef417",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762378,
+      "delegate_tx": "3739ecc32a16b7971a2c2d2bfb428bd8ee6368e1f3bb9d5d0c1cc1ecee212f03",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762380
+    },
+    {
+      "member": "0x638758220E13CaC9358b7AdeD401f8623f93A902",
+      "mint_tx": "b46108aa470a7235c6573e9384e1e0c333a4e4931a287614a4a3d4fa5c1a58ba",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762383,
+      "delegate_tx": "45be43fb4f5cfd40d615c62d1561a540a84648af86ca59bd964b406db2092c9d",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762384
+    },
+    {
+      "member": "0x8a6Cfdf0CbfDd2472FD57aa21826E409AA0842B2",
+      "mint_tx": "38c37d9e1d11287c91e9af38b8b9f4060e09a22c1bb33a7ce6de3442a90bd941",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762385,
+      "delegate_tx": "877e4591e6c58f317c3de1dd28b9f842f693064ea0370708bdbaa1d8cff92d84",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762386
+    },
+    {
+      "member": "0xCc26d55d4a64b644cAA8B7115b802afce72Aa018",
+      "mint_tx": "584d65e726a58ed28f62afb1c04954d17c1f6fa1e7590d9b17e4521d104b53f4",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762389,
+      "delegate_tx": "174e5a30b5b9f71ace5557a79850f3a2fe51d55e5c694312ef490343192e89b9",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762390
+    },
+    {
+      "member": "0x7E8F1EF838ed92052578D10250Cb429Bd37Ef981",
+      "mint_tx": "581d4ff7ee09e2c91edbdbc14a93d759ea3286e69ca90db2871b407041603b4d",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762391,
+      "delegate_tx": "e474e656404f92961e4d949b38ffd8e843c5c4c6e7494c544885471129f78ec1",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762392
+    },
+    {
+      "member": "0x725fbEaD8eA400Acf696ab6f823857497a6a7646",
+      "mint_tx": "ffb4765f5a792d9c3204ef2051274f44222a030dbdef5d618e6fcb020a74cc3e",
+      "mint_gasUsed": 89024,
+      "mint_blockNumber": 9762395,
+      "delegate_tx": "282e351d1041c29ed01227fd401a10540f5e71aff69e06a14fa2762bd14c4b2b",
+      "delegate_gasUsed": 31167,
+      "delegate_blockNumber": 9762396
+    },
+    {
+      "member": "0x834912960702fD3C4dF4bDb5ac52f3eD104B9fE6",
+      "mint_tx": "623bdee9dea8c40c5ac9f725f56903bc75a6c63ce6639d26b423420faf83180c",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762397,
+      "delegate_tx": "d2c11fc08cc222c21955f3062b05e15be0b3fa423fdfe75f18955728cccad26f",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762398
+    },
+    {
+      "member": "0x13554FE71b5544c2293DE4fA68E172247C70250B",
+      "mint_tx": "14a31ef57f3ba1da28923ab33119626d1a2a98f7bc4c04aa3687ff32456ab6e7",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762399,
+      "delegate_tx": "ff122f6a4eb86629fb8f167856d26d8f18e7577bfc60d480ca4bf5c90e7972ce",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762400
+    },
+    {
+      "member": "0x90B6CB3E273d85CFBBec94460fE0f4b765194ddc",
+      "mint_tx": "07d8b6f4a22f7e8f7939a0725f4329efce4587a6400ca60633d8cac2f4b006c1",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762401,
+      "delegate_tx": "03cc966f13788787ff054e846fecfc29c586f5b6f9e3f74497ce09f4bc84d182",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762402
+    },
+    {
+      "member": "0xe16c7952B0976a65FCC8d2dDe60EA0ADAFf173bF",
+      "mint_tx": "c761b06acee6ce68d7fb9baa011a6d5cb9416dd61f20a9733274a3e0056f3857",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762403,
+      "delegate_tx": "9d33a53c0bd3087af9f6be03f0955412c063f06e54a46687b07e68536708c408",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762404
+    },
+    {
+      "member": "0x91A9cB4CDDe5BEC5F5C6CCb8eeb2c7B1B3A5b69F",
+      "mint_tx": "a4e3d69e67c84d212c0b0f8f7dad0455369067259cd78c0e26a396307d44aac9",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762405,
+      "delegate_tx": "eeab3b16bd2b1ca09148bde3e040c81eb08f25c381d0493f4f27bac8596693bf",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762406
+    },
+    {
+      "member": "0x13abdE6F551BbfB0C46D209d4826edf9cC6a774f",
+      "mint_tx": "d9016b61740260c2c003efa12536119959333ff85c859ea48b190a4e57850ce7",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762407,
+      "delegate_tx": "cc023feb79c61ac6f66b7a37c1847fbd62cbbf45c7065650ee4bbe3d45dedfd2",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762409
+    },
+    {
+      "member": "0x14Cf7bf6f0225D7d40d9911169aB89e7e2D9Df01",
+      "mint_tx": "886c7dfef6e2a2292795982748bd763e83b5d48351716cbd203b306893d016b3",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762410,
+      "delegate_tx": "5085f3cfa0b1363a9c77f67e3f515402900be0cbbb9fb50f25ef735a645df681",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762411
+    },
+    {
+      "member": "0x754e5cc9E617306Da547472Aa62c2B8d02b9A214",
+      "mint_tx": "8ffcb193fdbe6c2eb54ba57a10d146ba578254642b644248ae93a7702f76cba6",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762414,
+      "delegate_tx": "47f711dabd72225957e27ef296ce1ce81fd1a15d19753ba1495227f3acb19def",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762415
+    },
+    {
+      "member": "0xdB8850FFB07a252093C6D1e1F1081Bf7AeF08E7a",
+      "mint_tx": "c85ed5ee2c973c57eb9a28c3d4adecedcfd2000b57bd53a62ce844d451e6a794",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762416,
+      "delegate_tx": "ea48da8e0b7ebac1c7d1d4b2f6ebf4757c0ca42fc3d17c803bca4d58086b7148",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762418
+    },
+    {
+      "member": "0x9A648748adA8E5Bdc9708b0f862D82CcB4d5eF0d",
+      "mint_tx": "5280008e8833ea771848fff996fdd88b0026215f856c61574ba8be89c435a071",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762421,
+      "delegate_tx": "f529afdf9c0e3f03af28a86ec3065b662a4c8b433dca22eab66c85ba8490fd62",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762422
+    },
+    {
+      "member": "0xd75B1CeE77B4cCdd3733082C0E50b36CCf047830",
+      "mint_tx": "2419e76dcd160154ed33d26b22cb90bef36b4ebf8546325921401f15da689aab",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762423,
+      "delegate_tx": "c5f54f01cd1faaf24585a6006e3518a342bf82703c2117bc90037855d2cc320f",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762424
+    },
+    {
+      "member": "0x04c4dC1Fa64CD84a912186595408279a82b77d17",
+      "mint_tx": "74f7125b9eab3b9038e43258f5e4fb49a2ca84e73b77d0ed92f5906273dc0112",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762429,
+      "delegate_tx": "bb23e6a1b1ed9b537a2235ce131fb659517df8452fe5a2867d016c0f9f01b3f7",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762430
+    },
+    {
+      "member": "0xb68EF776f70625FAc9EAE4d874006B3d9122D69a",
+      "mint_tx": "62ab0067d24a2a809b8268939ca5fc32bbbf2d2a5b2073decb050f3e5682163f",
+      "mint_gasUsed": 89024,
+      "mint_blockNumber": 9762432,
+      "delegate_tx": "c85b1790d13b1024c5c9843b97f1eb08942fb8e0b76627156d9c26cd6f59df53",
+      "delegate_gasUsed": 31167,
+      "delegate_blockNumber": 9762434
+    },
+    {
+      "member": "0x942cD49Feb128b50f1e442D508161B0993c806d1",
+      "mint_tx": "14226ca092592c52bbff0a58cfa2554503f5e58541ec0bf1ad7143d7e0792567",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762435,
+      "delegate_tx": "b4a203419a5184528c7f08c772eacc0bc5e9d4845c5a63249dfbddf9eaa55301",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762437
+    },
+    {
+      "member": "0x74Ec5570b36395f2ce7675847A603a01a08A0f92",
+      "mint_tx": "d17cfbc20c7fb4611864976bb9227eb0f5ab20c7ac0e244f6e05b6c18e639bc6",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762439,
+      "delegate_tx": "4d91afa53352d084646364d89020c7bf3a26fbd38e289f13192a430b690c8c13",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762440
+    },
+    {
+      "member": "0x88a3E62c0Be9695939e33E9E4f894542C27DEe7F",
+      "mint_tx": "25daab315ee6cb253f3b7c2118dfff5b8aa5e46e2c9fd63f19b70620642f2882",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762444,
+      "delegate_tx": "8277cdfc97ad89b82d88b52ca97280da501d10498483a4cc3ccd93e1a2da83ae",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762447
+    },
+    {
+      "member": "0x50b335d78F357A4f574301D89016589Fc7358541",
+      "mint_tx": "71f724e19efa6f9eac72ef663b416d8dda4dfe6540eeea5f1c0880c4f8f0da90",
+      "mint_gasUsed": 89036,
+      "mint_blockNumber": 9762449,
+      "delegate_tx": "a14676e3c8533637dac06c45b5baead45fbd22bf65b31041ed4a1f21f8be4c8c",
+      "delegate_gasUsed": 31179,
+      "delegate_blockNumber": 9762450
+    },
+    {
+      "member": "0xd0bD59e2A124EBF609F6bE56D200eAa51E6C9382",
+      "mint_tx": "9a3b77094cd4e7cd9c2308b13cadae38b14469385fe6e683634bab139e421ccc",
+      "mint_gasUsed": 89024,
+      "mint_blockNumber": 9762451,
+      "delegate_tx": "86b3815893c39711614b568efa5dbbec40a4c72584dcb0bf73b28ceee8abe99a",
+      "delegate_gasUsed": 31167,
+      "delegate_blockNumber": 9762454
+    }
+  ],
+  "owner_mint": {
+    "mint_tx": "3ac41cbd557cc3c39611b9ef6f4efb6f7faec8984638d22e7a685f8847cfad3e",
+    "mint_gasUsed": 136175,
+    "mint_blockNumber": 9762456
+  }
+}
