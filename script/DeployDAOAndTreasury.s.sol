@@ -16,7 +16,7 @@ contract DeployDAOAndTreasury is Script {
 
         // --- Existing deployed addresses ---
         address timelockAddr = 0xa71a17F8CC919800b2DD40A9E4472B746946C9C5;
-        address tokenAddr     = 0xF5b4ca1744438f403f0919fC1E51DcDBf43d9137;
+        address tokenAddr = 0xF5b4ca1744438f403f0919fC1E51DcDBf43d9137;
 
         // --- Log addresses and check if contracts exist ---
         console.log("Timelock address:", timelockAddr);
@@ -33,7 +33,7 @@ contract DeployDAOAndTreasury is Script {
 
         // --- Cast deployed contracts properly ---
         TimelockController timelock = TimelockController(payable(timelockAddr));
-        MembershipToken token        = MembershipToken(tokenAddr);
+        MembershipToken token = MembershipToken(tokenAddr);
 
         // --- Extra logging before DAO deployment ---
         console.log("TimelockController contract code length:", address(timelock).code.length);
@@ -44,10 +44,10 @@ contract DeployDAOAndTreasury is Script {
             "DAOOptimized",
             token,
             timelock,
-            1,              // votingDelay
-            45818,          // votingPeriod
+            1, // votingDelay
+            45818, // votingPeriod
             103_549_028_532_224, // proposalThreshold
-            4               // quorum numerator %
+            4 // quorum numerator %
         );
 
         console.log("DAOOptimized deployed at:", address(dao));

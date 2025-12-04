@@ -3,12 +3,12 @@ pragma solidity ^0.8.20;
 
 contract TreasuryBasic {
     address public dao;
-    address[] public lastRecipients;        // ❌ Unbounded array for inefficiency
-    uint256 public lastAmount;              // ❌ Unused writes
-    uint256 public totalWithdrawn;          // ❌ Double-accounting
+    address[] public lastRecipients; // ❌ Unbounded array for inefficiency
+    uint256 public lastAmount; // ❌ Unused writes
+    uint256 public totalWithdrawn; // ❌ Double-accounting
 
     constructor(address _dao) {
-        dao = _dao;                         // ❌ No immutability
+        dao = _dao; // ❌ No immutability
     }
 
     // ❌ Anyone can send ETH – intended but unprotected

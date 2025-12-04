@@ -8,21 +8,13 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
 
 contract MembershipToken is ERC20, ERC20Permit, ERC20Votes, Ownable {
-    constructor()
-        ERC20("Fulcrum Membership", "FMBR")
-        ERC20Permit("Fulcrum Membership")
-        Ownable(msg.sender)
-    {}
+    constructor() ERC20("Fulcrum Membership", "FMBR") ERC20Permit("Fulcrum Membership") Ownable(msg.sender) {}
 
     // ---------------------------------------------------------
     // Required override #1
     // _update() is overridden by ERC20Votes and ERC20
     // ---------------------------------------------------------
-    function _update(address from, address to, uint256 amount)
-        internal
-        virtual
-        override(ERC20, ERC20Votes)
-    {
+    function _update(address from, address to, uint256 amount) internal virtual override(ERC20, ERC20Votes) {
         super._update(from, to, amount);
     }
 
@@ -30,13 +22,7 @@ contract MembershipToken is ERC20, ERC20Permit, ERC20Votes, Ownable {
     // Required override #2
     // nonces() comes from both ERC20Permit and Nonces
     // ---------------------------------------------------------
-    function nonces(address owner)
-        public
-        view
-        override(ERC20Permit, Nonces)
-        returns (uint256)
-    {
+    function nonces(address owner) public view override(ERC20Permit, Nonces) returns (uint256) {
         return super.nonces(owner);
     }
-
 }

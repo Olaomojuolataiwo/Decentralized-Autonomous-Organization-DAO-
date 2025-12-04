@@ -9,7 +9,7 @@ contract TreasurySecure is Ownable, ReentrancyGuard {
     /// STORAGE
     /// -----------------------------------------------------------------------
 
-    address public immutable governance;    // ✔ cheaper SLOAD
+    address public immutable governance; // ✔ cheaper SLOAD
     mapping(address => bool) public allowedTargets;
 
     /// -----------------------------------------------------------------------
@@ -33,10 +33,7 @@ contract TreasurySecure is Ownable, ReentrancyGuard {
     /// -----------------------------------------------------------------------
     /// ADMIN (only governor can add/remove allowed targets)
     /// -----------------------------------------------------------------------
-    function setAllowedTarget(address target, bool allowed) 
-        external 
-        onlyOwner 
-    {
+    function setAllowedTarget(address target, bool allowed) external onlyOwner {
         allowedTargets[target] = allowed;
         emit TargetAllowed(target, allowed);
     }
@@ -44,15 +41,7 @@ contract TreasurySecure is Ownable, ReentrancyGuard {
     /// -----------------------------------------------------------------------
     /// GOVERNANCE EXECUTION ENTRYPOINT
     /// -----------------------------------------------------------------------
-    function execute(
-        address target,
-        uint256 value,
-        bytes calldata data
-    )
-        external
-        nonReentrant
-        returns (bytes memory)
-    {
+    function execute(address target, uint256 value, bytes calldata data) external nonReentrant returns (bytes memory) {
         require(msg.sender == governance, "Not governance");
         require(allowedTargets[target], "Target not allowed");
         require(address(this).balance >= value, "Insufficient balance");
