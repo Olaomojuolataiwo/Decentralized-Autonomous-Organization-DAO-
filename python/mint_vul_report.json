@@ -1,0 +1,733 @@
+{
+  "timestamp": 1764868338,
+  "chain_id": 11155111,
+  "rpc": "https://eth-sepolia.g.alchemy.com/v2/F8X3H2cE64aIbdybBl01B",
+  "token": "0x40515b13F02A82762Cc99E67500e86E1De2385Fd",
+  "owner": "0x1f9162aDf495696C72Be2473e62C51B7B6fd2E50",
+  "num_members": 120,
+  "per_member_amount": "300000000000000000000000",
+  "total_distributed": "36000000000000000000000000",
+  "remainder_for_owner": "64000000000000000000000000",
+  "mint_txs": [
+    {
+      "member": "0xAaC4A34f85f122f596e3eB104581BceB2A095715",
+      "mint_tx": "4ebdd7bd4fa8d99d91d9fb991cdb5a6b94a599bfef95cb77f2e20ab14b3a3ea6",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768710
+    },
+    {
+      "member": "0x127e548a314da196Dc29Adec1b9A347C7b6E019C",
+      "mint_tx": "f0b4d8f272a9f38e75f87d28613f47a091f74095e79b42466faf76cc26438f90",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768715
+    },
+    {
+      "member": "0xbCe4Ae99670a9862a9D0461476AbE4514FBF0968",
+      "mint_tx": "5229a945e0c2761321a215e323e59e69393b891ad545e296dc2761f0b5bd7797",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768716
+    },
+    {
+      "member": "0x6fcf7450f3c6b2eFc3215021333bFaDc9bC04c42",
+      "mint_tx": "72cd1d7e7abf1b48bd4f7eabd8da67c77edf844cd15ad8449fcc85f06adee843",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768717
+    },
+    {
+      "member": "0x081BeD3aeF309AC70EAd44d2Bb06a2d9a91Bf22F",
+      "mint_tx": "e57b9a8a21a7fe9113847e19ff4093c06d08f9aa4d2eab2fcb41ba139cedf34f",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768718
+    },
+    {
+      "member": "0x53d89EF8afB7EBCfAc4d5C05B4Ae9281feEFC4ed",
+      "mint_tx": "2f676dc4d4b491d9a7bb58fe90665e61d2c1656f52689d6ddf6690c7f109cd21",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768719
+    },
+    {
+      "member": "0x809591FE0b0BbdfCec6AB4a1026d583a1D2CC0b0",
+      "mint_tx": "b719dfc5abd7f7a8cb83238b934476c45e8a757fc8dd0962a9c93561931da5ab",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768720
+    },
+    {
+      "member": "0xd0388BC7727a609878c86059e6D013c2260A0F6b",
+      "mint_tx": "52c7254a62abbd7f19028cab74e0994393364485d5e3c0d319bcc758d71b6aef",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768721
+    },
+    {
+      "member": "0xa2527392F33C3816aAE1F5Ec967C0C9d9c1eB378",
+      "mint_tx": "106f42a72c1af90c74419c9781e81bef6b40cf1b965cd84f3fdb8fa2e1e487ef",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768723
+    },
+    {
+      "member": "0x96B273Bf69A1d9B78D90694668732830D2E0F5Ce",
+      "mint_tx": "2d482b097c1c82650633790c054c59856e33fa38174fd7995317720b5ee514ec",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768724
+    },
+    {
+      "member": "0xfab0bADEF95dDa7F9067F4359B639Baf880D6E6E",
+      "mint_tx": "02be7547158199fdc34624e23d220f1a0bb83f5d95572a02eea8fe70666baa68",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768725
+    },
+    {
+      "member": "0xf6b9F2C8B11984Ad3E0cbf13B8B52de3E359bA5f",
+      "mint_tx": "3abe7473e9ce0e3913558666d04130258978566dc563ad22a37e7a0b8b3c83d4",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768726
+    },
+    {
+      "member": "0xe795f32b6758C3028Fb8a38300217E0Eb892c9C3",
+      "mint_tx": "d1a40ee364d2d8779ce3ff4fabb1f72246300388043fc5d334851b548fe853d0",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768728
+    },
+    {
+      "member": "0x049b64A6Bee72c402e9C5678ea662899ceDdE52D",
+      "mint_tx": "3e098e05f80ce49c8c503b9878c5d58fc867265187d9ee514c4f21245b27077b",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768729
+    },
+    {
+      "member": "0x2532496398e69fc75b116dd26B8e018ce50746f8",
+      "mint_tx": "d8d708b201c682579a684a3b5df7b036d6c67d60983151404175fc815fb96593",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768730
+    },
+    {
+      "member": "0xc7C4Bc64aeea4965635A44eB326098CB749206b2",
+      "mint_tx": "6111980a16f56be341065401e4af2c3ae7835063c57dc664519bb8180c771ff8",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768731
+    },
+    {
+      "member": "0x09126978500DA40017231bC6df1C4c74a8C58194",
+      "mint_tx": "8a15afc852b15eaf0b8946359380330460e001bad5d8c8bb0b5155c5e28f0494",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768732
+    },
+    {
+      "member": "0xFa1959986439bD343097291BFBF4d060A00E8ECe",
+      "mint_tx": "0b0821512941b83bccc57d99ffc009da03f14c61b97aa16fbe107d3982b1b9bb",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768733
+    },
+    {
+      "member": "0xC931D455406Bd6f392eDa83f6B9A2809b3E0046A",
+      "mint_tx": "77d3347fe501f7b7a303629dccc990dbccf2f91ab13b6601d3f72d07305fa68b",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768736
+    },
+    {
+      "member": "0xe6414f0F8269CAf42902671295185b8CB4D41DEB",
+      "mint_tx": "dcb5fe62e75db5bdb5a781593bac4ff1263e85763cc6d47813a94b429e41986b",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768737
+    },
+    {
+      "member": "0xaE1fe4B094baFD7445a38Be888FB3e4e3e2B30B9",
+      "mint_tx": "d6de75df9bd500fe9d5eacc38047511889b8bb583f6170a0231cb2fefdf29303",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768738
+    },
+    {
+      "member": "0x4d94b44526f4d44c945260D94E4b54DE2D81060f",
+      "mint_tx": "f62e4776462c117d42cf87c369e4412a69fe5e5e83ceeba06b57a22d93d4629b",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768739
+    },
+    {
+      "member": "0xc1A0d7cd782EF834AD41Efc9B37318531A10f9C1",
+      "mint_tx": "57d2ef435dd88adef024760a8b0341b63aab926f243643f876f1e986ca996c6b",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768740
+    },
+    {
+      "member": "0x2bAFD3b097c67AEC1b786924be841242eB6aAD83",
+      "mint_tx": "89b56343e49f465635dfb7ee43ca07641cad9bb0f52f75754f4b2288cdbaabc4",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768741
+    },
+    {
+      "member": "0xD67faa4289423b8D7bFDC96F0Af6A246875050e7",
+      "mint_tx": "2bee036b856a426d4a2b75fef716a18c8f109b16751892006af60d70914c16c2",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768742
+    },
+    {
+      "member": "0x9f06598C77cb3a3048d321b3Cb4E577d94204c88",
+      "mint_tx": "93ddf6d2d94c0ac271393464d39bde0501e5b7514f97e63aa7edc1cf453bdedd",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768743
+    },
+    {
+      "member": "0xd62D41B9e3dfC95fEbD05584CaDA17a5DaB4e992",
+      "mint_tx": "af3f7cf49033ee51a2382bf9539233b8de97fb11cae6b6138d5267ac92b1ff89",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768744
+    },
+    {
+      "member": "0x463DFB8b3C797d853979533dbAfE285fd7335d00",
+      "mint_tx": "0fc059489cd0cf7a2c3bbea5dc9075d71ad8ef312ebb91b702e1660bd74b9c71",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768746
+    },
+    {
+      "member": "0xD4B521E12d2DF29B86D3a1E4E0249F7EFd93d165",
+      "mint_tx": "e9b8fa319a2a04556abaf4085ebeafafc135b327e92ce958a69c97c983094205",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768747
+    },
+    {
+      "member": "0xb1234457355F3c732C2749AD08F30a5c79e7EeEE",
+      "mint_tx": "8569ad5c635c40ea9a3fadc1ce26951ee90b33ac79c51ae2fdc2cbc1e3dcf80a",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768748
+    },
+    {
+      "member": "0x5CA628aE5e16BdDAEb6f0dfCA5BDc9E3CBc4B93C",
+      "mint_tx": "155787788517868446e6fa86db22cce5d95f6aff52eca3bd60333d0d46980c70",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768749
+    },
+    {
+      "member": "0xFF34921f11F4F9329Fa7dE3B6578Cc933837cC3c",
+      "mint_tx": "0bd935747f9832fec974e1c51bfe1e3a1597d7fb3ff640c2af44adede727a5bc",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768750
+    },
+    {
+      "member": "0xf1B3329F9798E21C873470b9e2cD3CEE9F6eE2Ff",
+      "mint_tx": "dc3609a7dfec812c1ff521b68845b36fb1e430910963741b0762437bab2ca0aa",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768751
+    },
+    {
+      "member": "0x56D841A82b20Dbb864b8d7E3674781f9D20B2339",
+      "mint_tx": "f21ec8c8c42a198df08f2a9a2eea21bdedf5413bd4c367f93c682b090270d4b2",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768752
+    },
+    {
+      "member": "0xaaD53FB05ca37C68108De45cA61179f0e0EcF6F8",
+      "mint_tx": "3e361b6cb12fc978408fc53450f11a82d4abd31d206b9e67e1d11c2153ac9d70",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768753
+    },
+    {
+      "member": "0x421cA0117c4543707c65f6d55239F645bf1a0681",
+      "mint_tx": "318908c6d5e119423a89f45a75cd06f39d75b6112699f3db19438ebdcd634e04",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768756
+    },
+    {
+      "member": "0x2d115e75dBc546fb4019781c9F901E53e9eb34Ee",
+      "mint_tx": "dd42421ef8cb32e6fda61c779f382c49604f8ff72362b59fc31e41c6595a7299",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768757
+    },
+    {
+      "member": "0xa57F43703B23C52E91D3609DB6DE025a6b098b00",
+      "mint_tx": "30d24d5ed0ab1a6b9a1a06cb374d83826ced78694cc9ef92915be633af99da75",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768759
+    },
+    {
+      "member": "0x44D117B5D4F62c91587AB758788985fFafbbBc8a",
+      "mint_tx": "c2c60813440cba65452ab5a5f22ebe29fb7bd54102ac5080dfe3c1c7a1f9de31",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768760
+    },
+    {
+      "member": "0x058359DE64097bdCbB3d8D96Fd059E0b93Ab7518",
+      "mint_tx": "a8233d2544e3dcad3666b9e753e58e53ce25d25731eb8ee61cfa12035ccc714c",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768761
+    },
+    {
+      "member": "0x314B5f059e8EB1d24aA0407398f71a57b94e5995",
+      "mint_tx": "a5d167cda8c959b45fd4ace4758e47ab1e1e496152220c93ada103808f8d1d41",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768762
+    },
+    {
+      "member": "0x88646155fAB563E36aceA2F1b194611FE3956E24",
+      "mint_tx": "001f31f6b5bbecd1426cc3a92103b627d345cb0cf0ff93a0326b6b8fb97d8eac",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768763
+    },
+    {
+      "member": "0x773Be0467c83F57BB59ecdD9Dc9614F0B654F76B",
+      "mint_tx": "1cfba0609eeebe60120be215840a2fac4d6378bcabfaea17537fdeb962331836",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768764
+    },
+    {
+      "member": "0x7C0B2e4De959bB6872EC7b68b1b68431BBCD6f07",
+      "mint_tx": "ed0b990505d5d7a8db630af95dba5a2463fb149a6e9e4119816cb3ddf1706296",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768765
+    },
+    {
+      "member": "0x57eD538628E99913E3CDd377B5C5f92b6ef2a5D0",
+      "mint_tx": "7853e37b5160460dc8596f01aea648ea2760a8c2312890cdc7f3a9bc7fb70860",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768766
+    },
+    {
+      "member": "0x552190bDb2328945193E47C83Ad71ba0A44CBDcb",
+      "mint_tx": "1ba28674d4c178f55006ab81c8363648f24e8095ef193a3ab22126172c2f83e2",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768767
+    },
+    {
+      "member": "0xD31d8Ba6efD31e7A85B4faD3467C4Cbb2b80E8B9",
+      "mint_tx": "16583254533e732a92368c1f41f01abf30250348ea1af9c7a07249470200ef0f",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768768
+    },
+    {
+      "member": "0x6499b71C83695988137F427c3F1b3241C45984B1",
+      "mint_tx": "1b09793d71bc9000bcafb651756126e338682bfa15619c7eec4e2a13c3640903",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768769
+    },
+    {
+      "member": "0x66Ab1869adF3160852e0eb834b28CB64F9e785ed",
+      "mint_tx": "3f87398757162b9e3ef72628aaf4fe14936000ce0cc822d77186e5723baa8a25",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768770
+    },
+    {
+      "member": "0xacD319d2686345552644029cA9912E3506BD3cd8",
+      "mint_tx": "3f7667eca922c48d4a225ceee1f545967ba00e0091ddd5a18ed0162844a6062a",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768772
+    },
+    {
+      "member": "0x79F688Ba3b2652353ACefDCD1faA85cD895B330f",
+      "mint_tx": "9cb2490062f1ddbdd8eb1d790d29b39ac667f9786f72b67307c23f3c899d08d0",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768773
+    },
+    {
+      "member": "0x6853B92711b1C5a693e695Aa35AeFBB2958D98c2",
+      "mint_tx": "207ff12b6c58283bd9a159f99e7226e9a5d66da82008e57ff35d064c7ced0257",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768774
+    },
+    {
+      "member": "0x44Dc57D023c3dC1090410bC9E1545D98EA9e4022",
+      "mint_tx": "341825025d212633f644384e84a8707538d9e5cb327c19c193493778d3017635",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768775
+    },
+    {
+      "member": "0x79f7667B8844ae665665d988376D34cf64D6E753",
+      "mint_tx": "08e1ff2747404085edc03d6c37f3f7067bc6b4c9996ad8ae56cd061cb05cb0f9",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768776
+    },
+    {
+      "member": "0x872aF500a120B5b19358fDcC8a2C081211910D46",
+      "mint_tx": "e4e43aff10e987571902535cdfd3e7fbdd804a9f8d932726fff0e4e302372590",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768777
+    },
+    {
+      "member": "0x4E97C2272ca51615FC1B056579A46Caf6B807669",
+      "mint_tx": "c298325824c03d4ba8061a35e9ee0d7db8efd7bc4783b1e756632f4aa917a9aa",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768778
+    },
+    {
+      "member": "0x724CAF2160cb4e0909F7e6d12cE54CbFf0d4EC58",
+      "mint_tx": "fa1049c7d95bb6a3d7708dc6460ae069c4230a195756b2af1ad7895c83d53e2d",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768779
+    },
+    {
+      "member": "0xeBABf2690E38cf92FcF46De9f33d61ce43B33DA5",
+      "mint_tx": "b150bdb312ba0ec3beb95cecf924cacb18d55de988519429f5da2230eabbe5ab",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768780
+    },
+    {
+      "member": "0x780428bEe53909dD5B17eE53DfB0b6cd0aae1d51",
+      "mint_tx": "f66240b07dc39951f06b64faf78d7c804ebb9aa1a834cfe3b26199bca6c61db5",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768781
+    },
+    {
+      "member": "0x7E3feC4b55dEF1a0Da5C236E70BCc358e0F52A9d",
+      "mint_tx": "d94c94b79f67c6fef3f8cfbf3c3e300d434830bcd343ea6773b0a5c000a5c068",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768782
+    },
+    {
+      "member": "0x4C23c1aDa55076b41B8dd781Ca0CC3696467B896",
+      "mint_tx": "c559b20a313c4c42b2f64cb3c8ddba519d44f1e04cbac0bce29348ee9b5a4a50",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768784
+    },
+    {
+      "member": "0x412f5Fcf23B5D933E068f3eec32731d10E0beB31",
+      "mint_tx": "7a2ad460d1b50ce49e62a1ca1d1e95add0a7b06c045ce4e5e6dfc5e27e6a0c0c",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768785
+    },
+    {
+      "member": "0x85c0Db3f35b5884245Cfe4c0abAc43364747f77e",
+      "mint_tx": "b76bf844a157b64fb526c5e5e5aacac4675706feb03a4087cbfd81b87692baf2",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768786
+    },
+    {
+      "member": "0x130a9Fe13578f784336E04b9F76b8fAfAe322a92",
+      "mint_tx": "281863b967725327f7df79922477b51124ade01f2aaca1abaf677a060e0e4894",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768787
+    },
+    {
+      "member": "0x8ba878Db6ef3BAdc4A966829177c0e0080fC6985",
+      "mint_tx": "01d8789cf7f3fcdc0726b3e00cb2ada409a0eaaa05884729d3ff5be9263cf123",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768788
+    },
+    {
+      "member": "0x9E7f62021C0320a8E92aA695d71fce2C475B9a9C",
+      "mint_tx": "e9031c9d0370168da8527aacf116ebf486c2debecd0dd4273e383062884c299b",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768789
+    },
+    {
+      "member": "0xD6D33B551351E8885F2371FABbb086B603605dc1",
+      "mint_tx": "b4be870efc540dc7f15f662e80711b3553e77439002576b303a109f21c894b08",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768790
+    },
+    {
+      "member": "0x7259B2470bcd334AA7c38Ba4af1ACeA4bf6Ce340",
+      "mint_tx": "06826eae9aae4c04e5641d56e848f06e5cba55707377a1de7d22f3792410db95",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768791
+    },
+    {
+      "member": "0x1Ca61E1762e859DE63a9Aa69A187B5FebE9332BE",
+      "mint_tx": "bbe81af97161dae65c714fef99f693671826580decfcf681bb392b3971d6e3d3",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768792
+    },
+    {
+      "member": "0x3CC35EA330aa36a29c48462225f02f2a5253fa7B",
+      "mint_tx": "933045b9b4853447055cd4415e6b66a68223b6cbf80af837462cf701ecf22e84",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768793
+    },
+    {
+      "member": "0xB7ee3646B13c3A0e4d648d82AaA954f6411A99F5",
+      "mint_tx": "ca53732a5870e76c0f2d9a7acc00628413bcd657c0746f9993a27790f3229cd7",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768794
+    },
+    {
+      "member": "0xd0223bAEC42fc437d5c209A97a5775dDE6425f4a",
+      "mint_tx": "609212ef9e14e4d8d6a89946c055da42f8ba1b5bf5affa214ab8aa7f23ea4b85",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768795
+    },
+    {
+      "member": "0x791831E7ebf9dCC49f2f467e825789DeC17ED7Ac",
+      "mint_tx": "6ad92bd9d69646c9a40474bc9df423ba113e840211e1bc4911502adb9435ca83",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768796
+    },
+    {
+      "member": "0xD0202A1ec10b443C59940a477D058f700b795f1c",
+      "mint_tx": "53d4cf277f62041962ada76d9a5f1b5785bbc7db2516ea11cd80a3928eaee6e2",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768797
+    },
+    {
+      "member": "0xFDf6f137Dc847a4F9FA31bed3fBf4eE3fff36838",
+      "mint_tx": "9ae210f3c28fb21b3d0891f0f71beea0c1a779169a9b74f9dbeaad348b771b9e",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768798
+    },
+    {
+      "member": "0x5B6C682ddF62c08d764e415974b4177a4D71c7D1",
+      "mint_tx": "37191b3151eddd1cba39203c40895827fc3ed12ed8b71bbcf78c72a90bcf544d",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768799
+    },
+    {
+      "member": "0xA6e7F91126a03cfE345e44154Ca6DD50773339C7",
+      "mint_tx": "9da04feb2eeb859300f2aeaa59aeabd88327b43b15d499acd639bef6ba4ba2c8",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768800
+    },
+    {
+      "member": "0xCf44f52B5B76D9bC5B55F0d4aE1F7476C4fEfa3A",
+      "mint_tx": "d8f2620455c04d6536821b4d2dd840e6b25d458678af8af8f5d70241ef3bbe58",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768802
+    },
+    {
+      "member": "0x33f0987F38eD099Bc3347293F641531e8D0EF143",
+      "mint_tx": "3f6c86158d7b4ba12d016c0d428affa049c04c7a80932e42f8b0e4cb9acdbbbe",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768803
+    },
+    {
+      "member": "0xb891C91C663Ccc84dDD8241D60dD94CDF107e9da",
+      "mint_tx": "164250a34769470a6b4ce85d5637ae5a8347a06923da4c5fcff6ce2349f00545",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768804
+    },
+    {
+      "member": "0xc2E9dAd3E85b41666EA7BFFaF84eED167e917a84",
+      "mint_tx": "c5034de2f7caf5bc958303a56943a4a820814deae3347ae45237d6c973dd719d",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768805
+    },
+    {
+      "member": "0xc8924657B37D65e41DFBbAE5265F4012BcFdBa6a",
+      "mint_tx": "0dea3bcb1319aed514f86efc6bd9621b5c0edd4b2932f4e52eb91f3116c34ba1",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768806
+    },
+    {
+      "member": "0x1895fac3d681634f87571885D4cb01cA6D0b087a",
+      "mint_tx": "82554ae4c6b7e90d2fd3992c83feb37eecd19084a0eafb7a6416cec77fcc1dab",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768807
+    },
+    {
+      "member": "0x7BBbC006bFac892B0C0E2D5428E56D318Fc13487",
+      "mint_tx": "298a6c5a6a8565bb8cf8b5a86ebe99d8f1b707ecb2c500389e280d624008c440",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768808
+    },
+    {
+      "member": "0x23289a85C13826b1D9238f327f93a301CA37F725",
+      "mint_tx": "f8cdada64884709fbc684db9f163f45072af708ab67627d9526c37e3ff340ed0",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768809
+    },
+    {
+      "member": "0xeA4616547026091aE22Dd8bB35bb5Af9508b2Cc5",
+      "mint_tx": "a5249e5779ec0419aebbbce56d9240b626fbb7d03fa36cd663bd8ce95dc974de",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768810
+    },
+    {
+      "member": "0xAb4CEAD09D63BBda9F81aC7cF76FC75C3afDD14e",
+      "mint_tx": "ffc87ef1d309e087300d3f3654093335b2a138353b515bae81bfae03f9f8eb90",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768811
+    },
+    {
+      "member": "0xa5bFE8992c474EC6B9a3BD24A0C9768Dcde0D537",
+      "mint_tx": "1bb487881a16bfa6bdf1e4bfb371c44e50b3ce5a66c1bb136c03871657ac071a",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768812
+    },
+    {
+      "member": "0x9765A8ccD5526009E9a312AC0C598c5C451Ace5e",
+      "mint_tx": "2d61eacf219ed949b5ebabd83996611a8096a17d52b6e39d24b30874cbe05fe9",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768813
+    },
+    {
+      "member": "0xC2B94e9f3bE0D9F6147d23b93BDCF322eBaa93a9",
+      "mint_tx": "80156634c0337226ece2c0b06eccf096a1bcba8fbf5eecded5f4a18a8cdee2af",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768814
+    },
+    {
+      "member": "0x7eEe4e583aAf89f157a28DfF878daEDc101249b1",
+      "mint_tx": "534e4aa6b41a14fb00ab41d25a983fbc4eb5df7f8423ceffebad914f61d36841",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768815
+    },
+    {
+      "member": "0x256CE1c015f2C0f38e8fa10290de1D4478e23b7f",
+      "mint_tx": "3d2c4a45d79ade761b2614061a5032ba48660a2abb9b8c1c458e2eea4f78bee6",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768816
+    },
+    {
+      "member": "0xC807c4cAFf17997556281778aFc25404e020577a",
+      "mint_tx": "b9d2b97a7f0e229f96bef3499678bf41030e2234d6a23b211f8ffe3e59c4128a",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768817
+    },
+    {
+      "member": "0xEcF3Dc07d8B30c1cd137ceB266999399C6830FE0",
+      "mint_tx": "3c27e7ee2d032f0db96b5a481551916bfb6169afc09e0ca26a7ce763ec997509",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768818
+    },
+    {
+      "member": "0x18dB8D24de274Bc17AfAC315d8Af93BEF33D8889",
+      "mint_tx": "418608f7afdb88d4014f72309dc81188962eeae65774de34dcc6667c872e5f3b",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768819
+    },
+    {
+      "member": "0xBD12AFaCF211eFAe479A032903fC2Bbaf7E2eCE9",
+      "mint_tx": "a4ed88a7dc96f39167dda219732678d8c3910b298a0eafdde544668e0c9ca753",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768820
+    },
+    {
+      "member": "0x45474b800457B9922b0b8fdc77bb028630cbb60e",
+      "mint_tx": "8fb0795883779a3ed3d6721eafdb967b08c2e3ed5379abc41cabb40eab33d185",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768821
+    },
+    {
+      "member": "0xf1b8a1f2C7A78dB6Ee73B08Eac36Fa709F0072C5",
+      "mint_tx": "6bcf6d6ea5315ba02e82c27138bd66cd5c05c6319ff2e347fe1b91c25746de94",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768822
+    },
+    {
+      "member": "0x7Be39d727B7BacF74A56f35eb20049BEEc3806F7",
+      "mint_tx": "55e494c967f8f2a9be86b034131e339f6ddeb672865ee15caeb5a1062745ecb1",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768823
+    },
+    {
+      "member": "0x1CB973576a705e506f46dea654B037672D960750",
+      "mint_tx": "27c57ecf43866d777e064ca6cde60e98b19271a69ed6cb6d02ba79ca734d3f96",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768824
+    },
+    {
+      "member": "0x0af7D3B45228FbAE93d00d1d63bbB02A15F52197",
+      "mint_tx": "9d8b6e02cf280661fe74788fd3a8f0fed32cf97bdc4bd1dd6c37d6a6ef9c1f41",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768825
+    },
+    {
+      "member": "0x61DcA024a50b0138714d4774993adffbb3A72a61",
+      "mint_tx": "fa038102818b8bd2acb753d2f6b679c7e704cbc105fd4ca06f69bbb137e3b718",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768826
+    },
+    {
+      "member": "0xe13cA154eD8Aa6820F7cDD644223748E318e6B6b",
+      "mint_tx": "022e3d85cb7affb5f2397d57a3e24852f77fb80a7817ee247bd07c02f955d328",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768827
+    },
+    {
+      "member": "0x09F5daB633FBB7fcE857bA6cc49fF42f8b4b34bA",
+      "mint_tx": "41366aa4d94ac3607db8dbeb1f33f693339d72daf0f99a4622a61b4b9dbd1ef7",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768828
+    },
+    {
+      "member": "0x3f95127e51041290E73E7aF1C8750cC43D8794Ad",
+      "mint_tx": "afe1750ed40cb3d3d5fa1245824bded99d22be9090f5bdbbcc976cf0d5867add",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768829
+    },
+    {
+      "member": "0xDD9b06d7cD9Ea8FCb204fD2e5ebb622bc8815286",
+      "mint_tx": "430068d090484e144073807394002b4a23f0a3f7016f3f2e5679911a31e14dba",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768830
+    },
+    {
+      "member": "0x951CFfa43ebeC96CB217E8705e0d3a8FA14aA9ec",
+      "mint_tx": "918bc46c95500611251bbcde68219a901ebbb9d4aba0c662b7c9f417a278bda1",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768831
+    },
+    {
+      "member": "0xA29af4492610B63b3FA4da6cc7E60D435221fA81",
+      "mint_tx": "20e2272cf447158d9c1e961299a461e98293aa4f01a6fee145e529c17384a0b6",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768832
+    },
+    {
+      "member": "0xc6eD59E896568CfC7cd5109821dcF5e5c913318A",
+      "mint_tx": "b52e89994204ecfed6a3794210599aec9f850f279742c3e1a9802bbb47e8bb48",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768833
+    },
+    {
+      "member": "0xF69c552Ef1307F2A4F6251CD0D94511641e970FD",
+      "mint_tx": "e20e436115f904f24bbd7f582562c00c69af9876fec95c2619f46e7c3c1e7a59",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768834
+    },
+    {
+      "member": "0x4208fAa7A377BcF5d32A4746F9FEc67cE9974C74",
+      "mint_tx": "ab055405aa49aa4542be1ba066948e8e36ba1584c377c7f991e9805ca760e5ad",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768836
+    },
+    {
+      "member": "0x48D6599FF69Db38164702EC13Ab029B50754c540",
+      "mint_tx": "9feb3433cb5b96c45688061d0593e09a1a6c9439c3788b2fc2a5ee815831c15e",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768837
+    },
+    {
+      "member": "0xBCD6b65EF5B728FE74429cb93fF0fbA9d0914C34",
+      "mint_tx": "2e06f00a5ff2023123cf9c0d3e6d468babf375d523498d138d022fcc4ecd3f63",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768838
+    },
+    {
+      "member": "0x115A81aB697bd4996aA57dBfd28F12234bbA4c6d",
+      "mint_tx": "c8bd37c39902b6677497484339d4121c3d4001b005d30f7951537e0645a9a362",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768839
+    },
+    {
+      "member": "0x5e9650092025315aeEc86F0107a59A03B94eD338",
+      "mint_tx": "26ffbf39dfc17977b86460d230c6f65ae069556be027d242d95c5526941d2d0e",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768840
+    },
+    {
+      "member": "0xE80D763CF41d4727096e3bB238238D39D3B630Cb",
+      "mint_tx": "d7aed4f4fac280a65bb091d8b3c27c922138b0833ce5455cc365a7f8e2743cea",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768841
+    },
+    {
+      "member": "0x075F8A84Eb6Af2B30a408bBbd16F44E726e84350",
+      "mint_tx": "be54406df93b591a2462a86fc8697d63371eb4fd503760e1bc71a027c0797999",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768842
+    },
+    {
+      "member": "0x84e81e0F7782BEe452B9aF00465d9049530E4d61",
+      "mint_tx": "a0ba103b59f9ef092c784ca4597243dc0271afe11f16eac0419bf06d882f1362",
+      "mint_gasUsed": 53462,
+      "mint_blockNumber": 9768843
+    },
+    {
+      "member": "0xa9EcBD6EcC75B419fD521Fa57b2406F26E96201e",
+      "mint_tx": "79d4d3bf07090732a473eaff8470e4774ab2536609564137666538d4ce305323",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768844
+    },
+    {
+      "member": "0x707D88600D1f1Ce3d0cca27C6fb32810CEdc133e",
+      "mint_tx": "3b028eb4d70b7485222b2bcc374c67281e78904e69e7bbd2e084d36ddc68c469",
+      "mint_gasUsed": 53474,
+      "mint_blockNumber": 9768845
+    }
+  ]
+}

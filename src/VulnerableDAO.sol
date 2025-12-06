@@ -1,116 +1,110 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-interface ITreasuryBasic {
-    function executePayment(address recipient, uint256 amount) external returns (bool);
+interface IERC20Simple {
+    function balanceOf(address) external view returns (uint256);
 }
 
+/// @notice Ultra-vulnerable DAO: members list + naive O(n) vote counting.
+/// - No snapshots
+/// - No delegation
+/// - Votes use current token balances (vulnerable)
+/// - Immediate execution if proposal passes
 contract VulnerableDAO {
-    /// -----------------------------------------------------------------------
-    /// STRUCTS
-    /// -----------------------------------------------------------------------
     struct Proposal {
         address proposer;
-        address recipient;
-        uint256 amount;
-        uint256 yesVotes;
-        uint256 noVotes;
-        uint256 startBlock;
-        uint256 endBlock;
+        string description;
+        address target;
+        uint256 value;
+        bytes data;
+        uint256 yes;
+        uint256 no;
+        uint256 createdAt;
         bool executed;
+        mapping(address => bool) hasVoted; // expensive mapping inside struct
     }
 
-    /// -----------------------------------------------------------------------
-    /// STORAGE — intentionally gas-inefficient
-    /// -----------------------------------------------------------------------
+    IERC20Simple public token;
+    address[] public members;
     mapping(uint256 => Proposal) public proposals;
-    mapping(uint256 => mapping(address => bool)) public hasVoted;
     uint256 public proposalCount;
 
-    ITreasuryBasic public treasury;
-    mapping(address => uint256) public votingPower; // ❌ manipulable — no snapshot
+    event ProposalCreated(uint256 id, address proposer);
+    event VoteCast(uint256 id, address voter, bool support, uint256 weight);
+    event Executed(uint256 id, address target, uint256 value);
 
-    /// -----------------------------------------------------------------------
-    /// EVENTS
-    /// -----------------------------------------------------------------------
-    event ProposalCreated(uint256 indexed id, address indexed proposer);
-    event VoteCast(uint256 indexed id, address indexed voter, bool support);
-    event Executed(uint256 indexed id);
-
-    /// -----------------------------------------------------------------------
-    /// CONSTRUCTOR
-    /// -----------------------------------------------------------------------
-    constructor(address _treasury) {
-        treasury = ITreasuryBasic(_treasury); // ❌ not immutable
+    constructor(address _token, address[] memory initialMembers) {
+        token = IERC20Simple(_token);
+        for (uint256 i = 0; i < initialMembers.length; i++) {
+            members.push(initialMembers[i]);
+        }
     }
 
-    /// -----------------------------------------------------------------------
-    /// BAD ADMIN SYSTEM
-    /// -----------------------------------------------------------------------
-    function setVotingPower(address user, uint256 power) external {
-        // ❌ Anyone can arbitrarily inflate their voting weight
-        votingPower[user] = power;
-    }
-
-    /// -----------------------------------------------------------------------
-    /// PROPOSE
-    /// -----------------------------------------------------------------------
-    function propose(address recipient, uint256 amount) external returns (uint256) {
-        proposalCount += 1;
-
-        proposals[proposalCount] = Proposal({
-            proposer: msg.sender,
-            recipient: recipient,
-            amount: amount,
-            yesVotes: 0,
-            noVotes: 0,
-            startBlock: block.number,
-            endBlock: block.number + 20, // ❌ tiny voting window
-            executed: false
-        });
-
-        emit ProposalCreated(proposalCount, msg.sender);
-        return proposalCount;
-    }
-
-    /// -----------------------------------------------------------------------
-    /// VOTE
-    /// -----------------------------------------------------------------------
-    function vote(uint256 id, bool support) external {
+    /// @notice Create a simple single-target proposal
+    function propose(address target, uint256 value, bytes calldata data, string calldata desc)
+        external
+        returns (uint256)
+    {
+        uint256 id = proposalCount++;
         Proposal storage p = proposals[id];
-
-        require(block.number <= p.endBlock, "Voting ended");
-        require(!hasVoted[id][msg.sender], "Already voted");
-
-        hasVoted[id][msg.sender] = true;
-
-        // ❌ manipulable
-        uint256 power = votingPower[msg.sender];
-
-        if (support) p.yesVotes += power;
-        else p.noVotes += power;
-
-        emit VoteCast(id, msg.sender, support);
+        p.proposer = msg.sender;
+        p.description = desc;
+        p.target = target;
+        p.value = value;
+        p.data = data;
+        p.createdAt = block.timestamp;
+        emit ProposalCreated(id, msg.sender);
+        return id;
     }
 
-    /// -----------------------------------------------------------------------
-    /// EXECUTE (insecure)
-    /// -----------------------------------------------------------------------
-    function execute(uint256 id) external {
-        Proposal storage p = proposals[id];
+    /// @notice Cast vote — one vote per member address. Vote weight = current token balance.
+    function castVote(uint256 proposalId, bool support) external {
+        Proposal storage p = proposals[proposalId];
+        require(!p.executed, "Executed");
+        require(!_hasVoted(p, msg.sender), "Already voted");
 
+        // Mark voted (store in mapping inside struct)
+        p.hasVoted[msg.sender] = true;
+
+        uint256 weight = token.balanceOf(msg.sender);
+        if (support) {
+            p.yes += weight;
+        } else {
+            p.no += weight;
+        }
+
+        emit VoteCast(proposalId, msg.sender, support, weight);
+
+        // naively check majority over sum of current balances (inefficient)
+        uint256 totalYes = p.yes;
+        uint256 totalNo = p.no;
+
+        // compute total supply by summing members balances (O(n) every check)
+        uint256 totalSupply = 0;
+        for (uint256 i = 0; i < members.length; i++) {
+            totalSupply += token.balanceOf(members[i]);
+        }
+
+        // pass if yes > no AND yes >= 50% of totalSupply (simple majority quorum)
+        if (totalYes > totalNo && totalYes * 2 >= totalSupply) {
+            _execute(proposalId);
+        }
+    }
+
+    function _hasVoted(Proposal storage p, address who) internal view returns (bool) {
+        return p.hasVoted[who];
+    }
+
+    /// @notice Very naive execution — calls target and marks executed
+    function _execute(uint256 proposalId) internal {
+        Proposal storage p = proposals[proposalId];
         require(!p.executed, "Already executed");
-        require(block.number > p.endBlock, "Voting not over");
-
-        // ❌ No quorum criteria
-        // ❌ Passes even with 1 vote
-        require(p.yesVotes > p.noVotes, "Rejected");
-
+        (bool ok,) = p.target.call{value: p.value}(p.data);
+        require(ok, "Call failed");
         p.executed = true;
-
-        // ❌ Executes blindly
-        treasury.executePayment(p.recipient, p.amount);
-
-        emit Executed(id);
+        emit Executed(proposalId, p.target, p.value);
     }
+
+    // receive funds so treasury / others can send ETH
+    receive() external payable {}
 }

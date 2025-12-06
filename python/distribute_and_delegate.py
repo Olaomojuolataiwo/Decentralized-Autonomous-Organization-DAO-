@@ -75,14 +75,19 @@ if not members_path.exists():
     raise SystemExit(f"{MEMBERS_FILE} not found")
 
 with open(members_path, "r") as f:
-    members = json.load(f)
+    # Read all lines, strip whitespace, and filter out empty lines
+    raw_addresses = [line.strip() for line in f if line.strip()]
+
+# Convert the list of raw addresses into the list of dictionaries 
+# that the rest of the script (accessing m["address"]) expects.
+members = [{"address": addr} for addr in raw_addresses]
 
 if not isinstance(members, list):
-    raise SystemExit("Members file must be a JSON array of objects with 'address' and 'private_key'.")
+    # Updated error message since we are no longer expecting a JSON array of objects
+    raise SystemExit("Members list could not be parsed correctly from the file.")
 
 num_members = len(members)
 print(f"Loaded {num_members} members")
-
 # Constants
 DECIMALS = token.functions.decimals().call()
 MULT = 10 ** DECIMALS
@@ -132,7 +137,7 @@ def send_tx(tx):
 
 # 1) Mint to members (sequential)
 # 41st member is at index 40.
-START_INDEX = 89
+START_INDEX = 0
 
 # Assuming 'members' is the list of recipients defined earlier in the script.
 # The original 'num_members' variable should still represent the total count.
@@ -156,50 +161,50 @@ for idx, m in enumerate(members[START_INDEX:], start=START_INDEX):
     receipt = send_tx(tx)
     nonce += 1
     # delegate (self-delegate)
-    print(f"       Delegating to {member_addr}")
-    tx2 = token.functions.delegate(member_addr).build_transaction({
-        "chainId": CHAIN_ID,
-        "gas": 200_000,
-        "gasPrice": gas_price,
-        "nonce": nonce,
-        "from": owner_addr,
-    })
-    receipt2 = send_tx(tx2)
-    nonce += 1
+    #print(f"       Delegating to {member_addr}")
+    #tx2 = token.functions.delegate(member_addr).build_transaction({
+    #    "chainId": CHAIN_ID,
+    #    "gas": 200_000,
+    #    "gasPrice": gas_price,
+    #    "nonce": nonce,
+    #    "from": owner_addr,
+    #})
+    #receipt2 = send_tx(tx2)
+    #nonce += 1
 
     report["mint_txs"].append({
         "member": member_addr,
         "mint_tx": receipt.transactionHash.hex(),
         "mint_gasUsed": receipt.gasUsed,
         "mint_blockNumber": receipt.blockNumber,
-        "delegate_tx": receipt2.transactionHash.hex(),
-        "delegate_gasUsed": receipt2.gasUsed,
-        "delegate_blockNumber": receipt2.blockNumber,
+     #   "delegate_tx": receipt2.transactionHash.hex(),
+     #   "delegate_gasUsed": receipt2.gasUsed,
+     #   "delegate_blockNumber": receipt2.blockNumber,
     })
 
     # small pause to avoid node throttling
     time.sleep(0.15)
 
 # 2) Mint remainder to owner
-if remainder_for_owner > 0:
-    print("Minting remainder to owner:", owner_addr)
-    tx = token.functions.mint(owner_addr, remainder_for_owner).build_transaction({
-        "chainId": CHAIN_ID,
-        "gas": 500_000,
-        "gasPrice": gas_price,
-        "nonce": nonce,
-        "from": owner_addr,
-    })
-    receipt = send_tx(tx)
-    report["owner_mint"] = {
-        "mint_tx": receipt.transactionHash.hex(),
-        "mint_gasUsed": receipt.gasUsed,
-        "mint_blockNumber": receipt.blockNumber,
-    }
-    nonce += 1
+#if remainder_for_owner > 0:
+#    print("Minting remainder to owner:", owner_addr)
+#    tx = token.functions.mint(owner_addr, remainder_for_owner).build_transaction({
+#        "chainId": CHAIN_ID,
+#        "gas": 500_000,
+#        "gasPrice": gas_price,
+#        "nonce": nonce,
+#        "from": owner_addr,
+#    })
+#    receipt = send_tx(tx)
+#    report["owner_mint"] = {
+#        "mint_tx": receipt.transactionHash.hex(),
+#        "mint_gasUsed": receipt.gasUsed,
+#        "mint_blockNumber": receipt.blockNumber,
+#    }
+#    nonce += 1
 
 # finalize
-out_path = Path("mint_report.json")
+out_path = Path("mint_vul_report.json")
 with open(out_path, "w") as f:
     json.dump(report, f, indent=2)
 

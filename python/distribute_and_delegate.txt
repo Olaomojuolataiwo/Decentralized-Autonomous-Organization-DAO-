@@ -131,66 +131,75 @@ def send_tx(tx):
     return receipt
 
 # 1) Mint to members (sequential)
-for idx, m in enumerate(members):
+# 41st member is at index 40.
+START_INDEX = 0
+
+# Assuming 'members' is the list of recipients defined earlier in the script.
+# The original 'num_members' variable should still represent the total count.
+# 1) Mint to members (sequential)
+for idx, m in enumerate(members[START_INDEX:], start=START_INDEX):
+    # 'members[START_INDEX:]' slices the list, starting from the 41st element.
+    # 'start=START_INDEX' ensures 'idx' starts at 40, so the print statement 
+    # [idx+1/num_members] correctly shows [41/Total].
+    
     member_addr = Web3.to_checksum_address(m["address"])
     print(f"[{idx+1}/{num_members}] Mint -> {member_addr}")
 
     tx = token.functions.mint(member_addr, per_member_amount).build_transaction({
-        "chainId": CHAIN_ID,
-        "gas": 500_000,  # gas limit guess - mint is cheap; adjust if needed
-        "gasPrice": gas_price,
-        "nonce": nonce,
-        "from": owner_addr,
-    })
-
-    receipt = send_tx(tx)
-    nonce += 1
-
-    # delegate (self-delegate)
-    print(f"       Delegating to {member_addr}")
-    tx2 = token.functions.delegate(member_addr).build_transaction({
-        "chainId": CHAIN_ID,
-        "gas": 200_000,
-        "gasPrice": gas_price,
-        "nonce": nonce,
-        "from": owner_addr,
-    })
-    receipt2 = send_tx(tx2)
-    nonce += 1
-
-    report["mint_txs"].append({
-        "member": member_addr,
-        "mint_tx": receipt.transactionHash.hex(),
-        "mint_gasUsed": receipt.gasUsed,
-        "mint_blockNumber": receipt.blockNumber,
-        "delegate_tx": receipt2.transactionHash.hex(),
-        "delegate_gasUsed": receipt2.gasUsed,
-        "delegate_blockNumber": receipt2.blockNumber,
-    })
-
-    # small pause to avoid node throttling
-    time.sleep(0.15)
-
-# 2) Mint remainder to owner
-if remainder_for_owner > 0:
-    print("Minting remainder to owner:", owner_addr)
-    tx = token.functions.mint(owner_addr, remainder_for_owner).build_transaction({
         "chainId": CHAIN_ID,
         "gas": 500_000,
         "gasPrice": gas_price,
         "nonce": nonce,
         "from": owner_addr,
     })
+
     receipt = send_tx(tx)
-    report["owner_mint"] = {
+    nonce += 1
+    # delegate (self-delegate)
+    #print(f"       Delegating to {member_addr}")
+    #tx2 = token.functions.delegate(member_addr).build_transaction({
+    #    "chainId": CHAIN_ID,
+    #    "gas": 200_000,
+    #    "gasPrice": gas_price,
+    #    "nonce": nonce,
+    #    "from": owner_addr,
+    #})
+    #receipt2 = send_tx(tx2)
+    #nonce += 1
+
+    report["mint_txs"].append({
+        "member": member_addr,
         "mint_tx": receipt.transactionHash.hex(),
         "mint_gasUsed": receipt.gasUsed,
         "mint_blockNumber": receipt.blockNumber,
-    }
-    nonce += 1
+     #   "delegate_tx": receipt2.transactionHash.hex(),
+     #   "delegate_gasUsed": receipt2.gasUsed,
+     #   "delegate_blockNumber": receipt2.blockNumber,
+    })
+
+    # small pause to avoid node throttling
+    time.sleep(0.15)
+
+# 2) Mint remainder to owner
+#if remainder_for_owner > 0:
+#    print("Minting remainder to owner:", owner_addr)
+#    tx = token.functions.mint(owner_addr, remainder_for_owner).build_transaction({
+#        "chainId": CHAIN_ID,
+#        "gas": 500_000,
+#        "gasPrice": gas_price,
+#        "nonce": nonce,
+#        "from": owner_addr,
+#    })
+#    receipt = send_tx(tx)
+#    report["owner_mint"] = {
+#        "mint_tx": receipt.transactionHash.hex(),
+#        "mint_gasUsed": receipt.gasUsed,
+#        "mint_blockNumber": receipt.blockNumber,
+#    }
+#    nonce += 1
 
 # finalize
-out_path = Path("mint_report.json")
+out_path = Path("mint_vul_report.json")
 with open(out_path, "w") as f:
     json.dump(report, f, indent=2)
 
