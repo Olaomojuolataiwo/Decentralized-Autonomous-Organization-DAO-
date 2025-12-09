@@ -42,7 +42,7 @@ PROPOSAL_DESCRIPTION = "Scenario 1: Single-Target Withdrawal Test"
 
 MemberData = Dict[str, str]
 
-def load_vulnerable_members(keys_file="dao_vul_members.json", addrs_file="dao_addresses.txt") -> List[MemberData]:
+def load_vulnerable_members(keys_file="../dao_vul_members.json", addrs_file="../dao_addresses.txt") -> List[MemberData]:
     """Loads vulnerable members: addresses from TXT, keys from JSON."""
     try:
         with open(keys_file, "r") as f:
@@ -108,6 +108,7 @@ deployer_addr = deployer_acct.address
 # --- CONTRACT ABIs (Minimal for interaction) ---
 TREASURY_BASIC_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "recipient", "type": "address"}, {"internalType": "uint256", "name": "amount", "type": "uint256"}], "name": "executePayment", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"}]')
 TREASURY_SECURE_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "target", "type": "address"}, {"internalType": "uint256", "name": "value", "type": "uint256"}, {"internalType": "bytes", "name": "data", "type": "bytes"}], "name": "execute", "outputs": [{"internalType": "bytes", "name": "", "type": "bytes"}], "stateMutability": "nonpayable", "type": "function"}]')
+VULNERABLE_GOVERNOR_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "target", "type": "address"}, {"internalType": "uint256", "name": "value", "type": "uint256"}, {"internalType": "bytes", "name": "data", "type": "bytes"}, {"internalType": "string", "name": "description", "type": "string"}], "name": "propose", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "proposalId", "type": "uint256"}, {"internalType": "bool", "name": "support", "type": "bool"}], "name": "vote", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]')
 GOVERNOR_ABI = json.loads('[{"inputs": [{"internalType": "address[]", "name": "targets", "type": "address[]"}, {"internalType": "uint256[]", "name": "values", "type": "uint256[]"}, {"internalType": "bytes[]", "name": "calldatas", "type": "bytes[]"}, {"internalType": "bytes32", "name": "descriptionHash", "type": "bytes32"}], "name": "propose", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "proposalId", "type": "uint256"}, {"internalType": "uint8", "name": "support", "type": "uint8"}], "name": "castVote", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "proposalId", "type": "uint256"}, {"internalType": "bool", "name": "support", "type": "bool"}], "name": "vote", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "address[]", "name": "targets", "type": "address[]"}, {"internalType": "uint256[]", "name": "values", "type": "uint256[]"}, {"internalType": "bytes[]", "name": "calldatas", "type": "bytes[]"}, {"internalType": "bytes32", "name": "descriptionHash", "type": "bytes32"}], "name": "queue", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "address[]", "name": "targets", "type": "address[]"}, {"internalType": "uint256[]", "name": "values", "type": "uint256[]"}, {"internalType": "bytes[]", "name": "calldatas", "type": "bytes[]"}, {"internalType": "bytes32", "name": "descriptionHash", "type": "bytes32"}], "name": "execute", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}]')
 TOKEN_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "delegatee", "type": "address"}], "name": "delegate", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]')
 
@@ -225,14 +226,22 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
     
     res = ScenarioResult()
     proposer_acct = Account.from_key(VUL_PROPOSER_KEY)
-    dao_contract = w3.eth.contract(address=dao_addr, abi=GOVERNOR_ABI)
+    dao_contract = w3.eth.contract(address=dao_addr, abi=VULNERABLE_GOVERNOR_ABI)
     
     # 1. Prepare Calldata
     treasury_contract = w3.eth.contract(address=treasury_addr, abi=TREASURY_BASIC_ABI)
-    calldata = treasury_contract.encodeABI(fn_name="executePayment", args=[RECIPIENT_ADDR, PROPOSAL_VALUE])
-    
+    calldata = treasury_contract.encode_abi(
+        "executePayment",
+        args=[RECIPIENT_ADDR, PROPOSAL_VALUE]
+    )
+
     # 2. PROPOSE
-    tx_func = dao_contract.functions.propose(treasury_addr, 0, calldata, PROPOSAL_DESCRIPTION)
+    tx_func = dao_contract.functions.propose(
+        treasury_addr,          # address target
+        0,                      # uint256 value (sending ETH, which VULNERABLE_DAO supports)
+        calldata,               # bytes data
+        PROPOSAL_DESCRIPTION    # string description
+    )
     receipt = send_tx(proposer_acct, tx_func, proposer_nonce)
     proposer_nonce += 1
     
@@ -281,14 +290,16 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     
     # --- 1. PREPARE CALLDATA ---
     # Inner: executePayment(RECIPIENT_ADDR, PROPOSAL_VALUE)
-    inner_calldata = w3.eth.contract(abi=TREASURY_BASIC_ABI).encodeABI(fn_name="executePayment", args=[RECIPIENT_ADDR, PROPOSAL_VALUE])
+    inner_calldata = w3.eth.contract(abi=TREASURY_BASIC_ABI).encodeABI(
+        "executePayment", # Function name is the first positional argument
+        args=[RECIPIENT_ADDR, PROPOSAL_VALUE]
+    )
     # Outer: TreasurySecure.execute(treasury_addr, 0, inner_calldata)
     treasury_contract = w3.eth.contract(address=treasury_addr, abi=TREASURY_SECURE_ABI)
-    calldata_to_send = treasury_contract.encodeABI(fn_name="execute", args=[
-        treasury_addr,
-        0, 
-        inner_calldata
-    ])
+    calldata_to_send = treasury_contract.encodeABI(
+        "execute", # Function name is the first positional argument
+        args=[treasury_addr, 0, inner_calldata]
+    )
     
     targets = [treasury_addr]
     values = [0]
@@ -336,7 +347,7 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
         receipt = send_tx(voter_acct, tx_func, voter_nonce)
         total_vote_gas += receipt['gasUsed']
         if i == VOTER_COUNT:
-             res.tx_vote = receipt['txHash'] 
+             res.tx_vote = receipt['tx_hash'] 
         time.sleep(0.1) 
         
     res.gas_vote = total_vote_gas
