@@ -161,25 +161,25 @@ for idx, m in enumerate(members[START_INDEX:], start=START_INDEX):
     receipt = send_tx(tx)
     nonce += 1
     # delegate (self-delegate)
-    #print(f"       Delegating to {member_addr}")
-    #tx2 = token.functions.delegate(member_addr).build_transaction({
-    #    "chainId": CHAIN_ID,
-    #    "gas": 200_000,
-    #    "gasPrice": gas_price,
-    #    "nonce": nonce,
-    #    "from": owner_addr,
-    #})
-    #receipt2 = send_tx(tx2)
-    #nonce += 1
+    print(f"       Delegating to {member_addr}")
+    tx2 = token.functions.delegate(member_addr).build_transaction({
+        "chainId": CHAIN_ID,
+        "gas": 200_000,
+        "gasPrice": gas_price,
+        "nonce": nonce,
+        "from": owner_addr,
+    })
+    receipt2 = send_tx(tx2)
+    nonce += 1
 
     report["mint_txs"].append({
         "member": member_addr,
         "mint_tx": receipt.transactionHash.hex(),
         "mint_gasUsed": receipt.gasUsed,
         "mint_blockNumber": receipt.blockNumber,
-     #   "delegate_tx": receipt2.transactionHash.hex(),
-     #   "delegate_gasUsed": receipt2.gasUsed,
-     #   "delegate_blockNumber": receipt2.blockNumber,
+        "delegate_tx": receipt2.transactionHash.hex(),
+        "delegate_gasUsed": receipt2.gasUsed,
+        "delegate_blockNumber": receipt2.blockNumber,
     })
 
     # small pause to avoid node throttling

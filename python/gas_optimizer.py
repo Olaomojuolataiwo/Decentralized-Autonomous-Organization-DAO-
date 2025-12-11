@@ -4,7 +4,7 @@ import json
 import logging
 from dataclasses import dataclass, asdict
 from typing import Dict, Any, List, Tuple
-
+from pathlib import Path
 from dotenv import load_dotenv
 from web3 import Web3
 from eth_account import Account
@@ -34,7 +34,7 @@ VOTER_COUNT = 61
 
 # Test Parameters
 RECIPIENT_ADDR = Web3.to_checksum_address("0x" + "DEADBEEF" * 5)
-PROPOSAL_VALUE = Web3.to_wei(0.1, 'ether')
+PROPOSAL_VALUE = Web3.to_wei(0.0004, 'ether')
 PROPOSAL_DESCRIPTION = "Scenario 1: Single-Target Withdrawal Test"
 
 
@@ -98,20 +98,12 @@ if len(VULNERABLE_MEMBERS) < VOTER_COUNT + 1 or len(OPTIMIZED_MEMBERS) < VOTER_C
 
 # --- PROPOSER SETUP (Always the first member of the respective list) ---
 VUL_PROPOSER_KEY = VULNERABLE_MEMBERS[0]['privateKey']
-OPT_PROPOSER_KEY = OPTIMIZED_MEMBERS[0]['privateKey']
+OPT_PROPOSER_KEY = OPTIMIZED_MEMBERS[50]['privateKey']
 
 # --- WEB3 SETUP ---
 w3 = Web3(Web3.HTTPProvider(RPC_URL))
 deployer_acct = Account.from_key(PRIVATE_KEY) # Timelock Admin Key
 deployer_addr = deployer_acct.address
-
-# --- CONTRACT ABIs (Minimal for interaction) ---
-TREASURY_BASIC_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "recipient", "type": "address"}, {"internalType": "uint256", "name": "amount", "type": "uint256"}], "name": "executePayment", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"}]')
-TREASURY_SECURE_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "target", "type": "address"}, {"internalType": "uint256", "name": "value", "type": "uint256"}, {"internalType": "bytes", "name": "data", "type": "bytes"}], "name": "execute", "outputs": [{"internalType": "bytes", "name": "", "type": "bytes"}], "stateMutability": "nonpayable", "type": "function"}]')
-VULNERABLE_GOVERNOR_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "target", "type": "address"}, {"internalType": "uint256", "name": "value", "type": "uint256"}, {"internalType": "bytes", "name": "data", "type": "bytes"}, {"internalType": "string", "name": "description", "type": "string"}], "name": "propose", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "proposalId", "type": "uint256"}, {"internalType": "bool", "name": "support", "type": "bool"}], "name": "vote", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]')
-GOVERNOR_ABI = json.loads('[{"inputs": [{"internalType": "address[]", "name": "targets", "type": "address[]"}, {"internalType": "uint256[]", "name": "values", "type": "uint256[]"}, {"internalType": "bytes[]", "name": "calldatas", "type": "bytes[]"}, {"internalType": "bytes32", "name": "descriptionHash", "type": "bytes32"}], "name": "propose", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "proposalId", "type": "uint256"}, {"internalType": "uint8", "name": "support", "type": "uint8"}], "name": "castVote", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "uint256", "name": "proposalId", "type": "uint256"}, {"internalType": "bool", "name": "support", "type": "bool"}], "name": "vote", "outputs": [], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "address[]", "name": "targets", "type": "address[]"}, {"internalType": "uint256[]", "name": "values", "type": "uint256[]"}, {"internalType": "bytes[]", "name": "calldatas", "type": "bytes[]"}, {"internalType": "bytes32", "name": "descriptionHash", "type": "bytes32"}], "name": "queue", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}, {"inputs": [{"internalType": "address[]", "name": "targets", "type": "address[]"}, {"internalType": "uint256[]", "name": "values", "type": "uint256[]"}, {"internalType": "bytes[]", "name": "calldatas", "type": "bytes[]"}, {"internalType": "bytes32", "name": "descriptionHash", "type": "bytes32"}], "name": "execute", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"}]')
-TOKEN_ABI = json.loads('[{"inputs": [{"internalType": "address", "name": "delegatee", "type": "address"}], "name": "delegate", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]')
-
 
 # --- DATA STRUCTURES & LOGGING ---
 @dataclass
@@ -127,36 +119,78 @@ class ScenarioResult:
     calldata_size: int = 0
     execution_path: str = "N/A" 
 
-def send_tx(acct: Account, tx_func: Any, nonce: int, value: int = 0) -> Dict[str, Any]:
-    """Helper to build, sign, and send a transaction."""
-    gas_price = w3.eth.gas_price
+# In gas_optimizer.py, replace your current send_tx function:
+
+def send_tx(account, tx_func, nonce: int):
+    acct = account # Use a clear local name
     
-    # Estimate gas and add buffer
+    # --- 1. BUILD TRANSACTION ---
+    gas_price = w3.to_wei('1.0', 'gwei') 
+    tx = tx_func.build_transaction({
+        "chainId": CHAIN_ID,
+        "gas": 700_000, 
+        "gasPrice": gas_price,
+        "nonce": nonce,
+        "from": acct.address,
+    })
+
+    # --- 2. SIMULATION (CRITICAL DEBUGGING) ---
     try:
-        gas_limit = int(tx_func.estimate_gas({"from": acct.address, "value": value}) * 1.2)
-    except Exception:
-        gas_limit = 3_000_000 
-    
-    try:
-        tx = tx_func.build_transaction({
-            "chainId": CHAIN_ID,
-            "gas": gas_limit,
-            "gasPrice": gas_price,
-            "nonce": nonce,
-            "from": acct.address,
-            "value": value,
-        })
-        signed_tx = acct.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction).hex()
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=600)
-        
-        if receipt.status != 1:
-            raise Exception(f"Transaction Reverted: Tx hash {tx_hash}")
-            
-        return {"gasUsed": receipt.gasUsed, "txHash": tx_hash, "calldataSize": len(tx['data'])}
+        # Simulate the transaction (w3.eth.call) to get the revert reason
+        w3.eth.call(tx) 
     except Exception as e:
-        logging.error(f"Error sending transaction from {acct.address}: {e}")
-        raise
+        # If simulation fails, print the detailed revert error and stop
+        print("-" * 50)
+        print(f"!!! CRITICAL REVERT DEBUGGING (SIMULATION) !!!")
+        print(f"Attempting to call {tx_func.fn_name} from {acct.address}")
+        # Use repr(e) for the most detailed error information
+        print(f"Transaction Reverted in Simulation. Error:")
+        print(repr(e)) 
+        print("-" * 50)
+        raise # Re-raise the exception to stop the script
+        
+    # --- 3. SIGN AND SEND ---
+    print(f"Sending Tx: {tx_func.fn_name} from {acct.address}")
+    signed_tx = w3.eth.account.sign_transaction(tx, acct.key)
+    
+    try:
+        # Send transaction and wait for receipt
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction).hex()
+        print(f"  > Tx Hash: {tx_hash}")
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        
+        # Check receipt status (a second-level check for non-simulated reverts)
+        if receipt.status == 0:
+            # If the transaction failed on-chain, raise an error
+            raise Exception(f"Transaction Reverted On-Chain: Tx hash {tx_hash}")
+
+        return receipt
+        
+    except Exception as e:
+        # This catches errors during sending or the receipt check above
+        print(f"ERROR: Error sending transaction from {acct.address}: {e}")
+        # The script will stop here, and we will get the precise web3 error
+        raise e
+
+def load_abi_from_artifact(contract_name: str, root_path: str = '../out') -> dict:
+    """Loads the full ABI from a standard Foundry/Hardhat build artifact path."""
+    # Constructs path: ./out/MembershipToken.sol/MembershipToken.json
+    path = Path(root_path) / f"{contract_name}.sol" / f"{contract_name}.json"
+    
+    if not path.exists():
+        raise FileNotFoundError(f"ABI artifact not found at: {path.resolve()}")
+        
+    with open(path, 'r') as f:
+        artifact = json.load(f)
+        return artifact['abi']
+
+TOKEN_ABI = load_abi_from_artifact("MembershipToken")
+DAO_OPTIMIZED_ABI = load_abi_from_artifact("DAOOptimized")
+VULNERABLE_GOVERNOR_ABI = load_abi_from_artifact("VulnerableDAO")
+TREASURY_BASIC_ABI = load_abi_from_artifact("TreasuryBasic")
+TREASURY_SECURE_ABI = load_abi_from_artifact("TreasurySecure")
+GOVERNOR_ABI = load_abi_from_artifact("DAOOPTIMIZED")
+MEMBERSHIP_TOKEN_ABI = load_abi_from_artifact("VulnerableMembershipToken")
 
 # ... log_results function remains the same ...
 
@@ -287,16 +321,61 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     res = ScenarioResult()
     proposer_acct = Account.from_key(OPT_PROPOSER_KEY)
     dao_contract = w3.eth.contract(address=dao_addr, abi=GOVERNOR_ABI)
+
+    TOKEN_ADDRESS_OZ = Web3.to_checksum_address('0x8468f201FEE551a0EFDB0b2d41876312fc21a63C')
+    # Get the token contract instance (must be the OZ ERC20Votes token)
+    token_contract = w3.eth.contract(address=TOKEN_ADDRESS_OZ, abi=TOKEN_ABI)
+    proposer_addr = proposer_acct.address
+
+    # 1. Check Proposer's raw token balance
+    token_balance = token_contract.functions.balanceOf(proposer_addr).call()
+    print(f"Proposer ({proposer_addr}) Token Balance: {token_balance}")
+    current_votes = token_contract.functions.getVotes(proposer_acct.address).call()
+
+    # If votes are 0 (as confirmed by debug output), try to delegate
+    if current_votes == 0:
+        print(f"ATTENTION: Proposer has 0 votes. Attempting re-delegation.")
+        
+        tx_func_delegate = token_contract.functions.delegate(proposer_acct.address)
+        
+        try:
+            # We must use the send_tx helper here to handle the transaction
+            delegate_receipt = send_tx(proposer_acct, tx_func_delegate, proposer_nonce) 
+            proposer_nonce += 1 # Increment nonce after successful tx
+            print(f"Delegation successful. New Nonce: {proposer_nonce}")
+        except Exception as e:
+            print(f"FATAL: Re-delegation FAILED for proposer. Check token balance.")
+            raise
+
+    # 1. Check Voting Power
+    voting_power = token_contract.functions.getVotes(proposer_acct.address).call()
+    
+    # 2. Check Proposal Threshold (The Governor function)
+    dao_contract = w3.eth.contract(address=dao_addr, abi=DAO_OPTIMIZED_ABI)
+    current_block = w3.eth.block_number
+    # Use the 'state' function to check the current proposal threshold
+    proposal_threshold = dao_contract.functions.proposalThreshold().call() 
+    
+    print("-" * 50)
+    print(f"!!! VOTING POWER DEBUGGING !!!")
+    print(f"Proposer ({proposer_acct.address}) Voting Power: {voting_power}")
+    print(f"Proposer ({proposer_addr}) Token Balance: {token_balance}")
+    print(f"DAO Proposal Threshold: {proposal_threshold}")
+    print("-" * 50)
+
+    # ... (Rest of the propose logic follows here)
+    # tx_func = dao_contract.functions.propose(targets, values, calldatas, description_hash)
+    # receipt = send_tx(proposer_acct, tx_func, proposer_nonce)
     
     # --- 1. PREPARE CALLDATA ---
     # Inner: executePayment(RECIPIENT_ADDR, PROPOSAL_VALUE)
-    inner_calldata = w3.eth.contract(abi=TREASURY_BASIC_ABI).encodeABI(
+    inner_calldata = w3.eth.contract(abi=TREASURY_BASIC_ABI).encode_abi(
         "executePayment", # Function name is the first positional argument
         args=[RECIPIENT_ADDR, PROPOSAL_VALUE]
     )
     # Outer: TreasurySecure.execute(treasury_addr, 0, inner_calldata)
     treasury_contract = w3.eth.contract(address=treasury_addr, abi=TREASURY_SECURE_ABI)
-    calldata_to_send = treasury_contract.encodeABI(
+    calldata_to_send = treasury_contract.encode_abi(
         "execute", # Function name is the first positional argument
         args=[treasury_addr, 0, inner_calldata]
     )
@@ -312,7 +391,7 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     proposer_nonce += 1
     
     res.gas_propose = receipt['gasUsed']
-    res.tx_propose = receipt['txHash']
+    res.tx_propose = receipt['transactionHash'].hex()
     res.calldata_size = receipt['calldataSize']
 
     # Extract proposalId from the logs (Topic 1 of ProposalCreated event)
@@ -393,12 +472,12 @@ def main():
     print(f"\n--- RUNNING SCENARIOS WITH {VOTER_COUNT} VOTERS ---")
 
     # --- RUN V1: Vulnerable DAO + Basic Treasury ---
-    print("\n--- Running V1 (Vulnerable DAO + Basic Treasury) ---")
-    v1_res, proposer_nonce_vul = run_scenario_vulnerable(V1_DAO_ADDR, V1_TREASURY_ADDR, proposer_nonce_vul)
+#    print("\n--- Running V1 (Vulnerable DAO + Basic Treasury) ---")
+#    v1_res, proposer_nonce_vul = run_scenario_vulnerable(V1_DAO_ADDR, V1_TREASURY_ADDR, proposer_nonce_vul)
 
     # --- RUN V2: Vulnerable DAO + Secure Treasury ---
-    print("\n--- Running V2 (Vulnerable DAO + Secure Treasury) ---")
-    v2_res, proposer_nonce_vul = run_scenario_vulnerable(V2_DAO_ADDR, V2_TREASURY_ADDR, proposer_nonce_vul)
+#    print("\n--- Running V2 (Vulnerable DAO + Secure Treasury) ---")
+#    v2_res, proposer_nonce_vul = run_scenario_vulnerable(V2_DAO_ADDR, V2_TREASURY_ADDR, proposer_nonce_vul)
 
     # --- RUN V3: Optimized DAO + Basic Treasury ---
     print("\n--- Running V3 (Optimized DAO + Basic Treasury) ---")
@@ -412,10 +491,10 @@ def main():
     # --- LOG COMPARISON MATRIX ---
 
     # V1 vs V4: Full Stack Comparison (Baseline vs Target)
-    log_results("V1 vs V4 (Full Vulnerable vs Full Optimized Stack)", v1_res, v4_res)
+#    log_results("V1 vs V4 (Full Vulnerable vs Full Optimized Stack)", v1_res, v4_res)
     
     # V1 vs V3: DAO-only improvement (Optimized DAO / Vulnerable Treasury)
-    log_results("V1 vs V3 (DAO-Only Benefit: Vulnerable vs Optimized Token/Voting)", v1_res, v3_res)
+#    log_results("V1 vs V3 (DAO-Only Benefit: Vulnerable vs Optimized Token/Voting)", v1_res, v3_res)
 
     # V2 vs V4: Treasury/Execution Divergence (Vulnerable DAO / Secure Treasury)
     log_results("V2 vs V4 (Secure Treasury Comparison)", v2_res, v4_res)
