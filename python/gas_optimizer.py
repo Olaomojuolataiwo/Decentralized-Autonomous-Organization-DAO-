@@ -24,7 +24,6 @@ V3_DAO_ADDR = os.getenv("V3_DAO_ADDR")          # DAOOptimized
 V3_TREASURY_ADDR = os.getenv("V3_TREASURY_ADDR")# TreasuryBasic
 V4_DAO_ADDR = os.getenv("V4_DAO_ADDR")          # DAOOptimized
 V4_TREASURY_ADDR = os.getenv("V4_TREASURY_ADDR")# TreasurySecure
-
 VUL_TOKEN_ADDR = os.getenv("VUL_TOKEN_ADDR")    # VulnerableMembershipToken
 OPT_TOKEN_ADDR = os.getenv("OPT_TOKEN_ADDR")    # MembershipTokenMintable
 TIMELOCK_ADDR = os.getenv("TIMELOCK_ADDR")      # TimelockController
@@ -35,7 +34,7 @@ VOTER_COUNT = 61
 # Test Parameters
 RECIPIENT_ADDR = Web3.to_checksum_address("0x" + "DEADBEEF" * 5)
 PROPOSAL_VALUE = Web3.to_wei(0.0004, 'ether')
-PROPOSAL_DESCRIPTION = "Scenario 1: Single-Target Withdrawal Test"
+PROPOSAL_DESCRIPTION = "Scenario 1: A Target Withdrawal Test"
 
 
 # --- DYNAMIC MEMBER LOADING ---
@@ -98,7 +97,7 @@ if len(VULNERABLE_MEMBERS) < VOTER_COUNT + 1 or len(OPTIMIZED_MEMBERS) < VOTER_C
 
 # --- PROPOSER SETUP (Always the first member of the respective list) ---
 VUL_PROPOSER_KEY = VULNERABLE_MEMBERS[0]['privateKey']
-OPT_PROPOSER_KEY = OPTIMIZED_MEMBERS[50]['privateKey']
+OPT_PROPOSER_KEY = OPTIMIZED_MEMBERS[0]['privateKey']
 
 # --- WEB3 SETUP ---
 w3 = Web3(Web3.HTTPProvider(RPC_URL))
@@ -128,7 +127,7 @@ def send_tx(account, tx_func, nonce: int):
     gas_price = w3.to_wei('1.0', 'gwei') 
     tx = tx_func.build_transaction({
         "chainId": CHAIN_ID,
-        "gas": 700_000, 
+        "gas": 1_000_000, 
         "gasPrice": gas_price,
         "nonce": nonce,
         "from": acct.address,
@@ -172,6 +171,21 @@ def send_tx(account, tx_func, nonce: int):
         # The script will stop here, and we will get the precise web3 error
         raise e
 
+def wait_for_blocks(w3, num_blocks):
+    """Waits for a specified number of blocks to be mined."""
+    if num_blocks <= 0:
+        return
+        
+    start_block = w3.eth.block_number
+    target_block = start_block + num_blocks
+    
+    print(f"Waiting for {num_blocks} block(s). Current: {start_block}, Target: {target_block}")
+    
+    while w3.eth.block_number < target_block:
+        time.sleep(5) # Poll every 5 seconds (adjust as needed for your chain)
+        
+    print(f"Block reached: {w3.eth.block_number}")
+
 def load_abi_from_artifact(contract_name: str, root_path: str = '../out') -> dict:
     """Loads the full ABI from a standard Foundry/Hardhat build artifact path."""
     # Constructs path: ./out/MembershipToken.sol/MembershipToken.json
@@ -191,8 +205,8 @@ TREASURY_BASIC_ABI = load_abi_from_artifact("TreasuryBasic")
 TREASURY_SECURE_ABI = load_abi_from_artifact("TreasurySecure")
 GOVERNOR_ABI = load_abi_from_artifact("DAOOPTIMIZED")
 MEMBERSHIP_TOKEN_ABI = load_abi_from_artifact("VulnerableMembershipToken")
+VOTING_DELAY = 1
 
-# ... log_results function remains the same ...
 
 def log_results(scenario_name: str, vul_res: ScenarioResult, opt_res: ScenarioResult):
     """Formats and prints the results according to the required structured logging standard."""
@@ -280,8 +294,9 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
     proposer_nonce += 1
     
     res.gas_propose = receipt['gasUsed']
-    res.tx_propose = receipt['txHash']
-    res.calldata_size = receipt['calldataSize']
+    res.tx_propose = receipt['transactionHash'].hex()
+    tx_data = w3.eth.get_transaction(receipt['transactionHash'])
+    res.calldata_size = (len(tx_data['input']) - 2) / 2
     
     # Get proposalId from storage slot 3 (specific to VulnerableDAO)
     proposal_id = w3.to_int(w3.eth.get_storage_at(dao_addr, 3))
@@ -295,16 +310,39 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
         voter_acct = Account.from_key(member_data['privateKey'])
         voter_nonce = w3.eth.get_transaction_count(voter_acct.address)
         
-        tx_func = dao_contract.functions.vote(proposal_id, True) 
+        tx_func = dao_contract.functions.castVote(proposal_id, True) 
         
         # The final vote (i == VOTER_COUNT) includes O(N) loop + execution logic
         if i == VOTER_COUNT:
             print(f"  [Vulnerable] Measuring final vote (Vote {i}) which includes O(N) check and execution...")
+            signed_tx = voter_acct.sign_transaction(
+            tx_func.build_transaction({
+                'from': voter_acct.address,
+                'nonce': voter_nonce,
+                'gas': 2000000,
+                'maxFeePerGas': w3.to_wei('10', 'gwei'),
+                'maxPriorityFeePerGas': w3.to_wei('2', 'gwei'),
+            })
+            )
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            print(f" > Tx Hash: {w3.to_hex(tx_hash)}")
         
-        receipt = send_tx(voter_acct, tx_func, voter_nonce)
-        total_vote_gas += receipt['gasUsed']
-        if i == VOTER_COUNT:
-            res.tx_vote = receipt['txHash']
+            # 2. Get the receipt for gas measurement
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        
+            # 3. Store the gas usage for the final vote
+            final_vote_gas = receipt['gasUsed']
+        
+            # Since V1 executes immediately, we don't need a separate execute step.
+            execution_gas = 0 
+            break # Exit the loop after the final vote
+    
+        else:
+            receipt = send_tx(voter_acct, tx_func, voter_nonce)
+            total_vote_gas += receipt['gasUsed']
+            if i == VOTER_COUNT:
+                res.tx_vote = receipt['transactionHash'].hex()
+                tx_data = w3.eth.get_transaction(receipt['transactionHash'])
             
         time.sleep(0.1) 
         
@@ -392,12 +430,23 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     
     res.gas_propose = receipt['gasUsed']
     res.tx_propose = receipt['transactionHash'].hex()
-    res.calldata_size = receipt['calldataSize']
+    tx_data = w3.eth.get_transaction(receipt['transactionHash'])
+    res.calldata_size = (len(tx_data['input']) - 2) / 2
 
     # Extract proposalId from the logs (Topic 1 of ProposalCreated event)
     receipt_obj = w3.eth.get_transaction_receipt(res.tx_propose)
-    proposal_id = w3.to_int(receipt_obj.logs[0].topics[1]) 
-    
+    dao_contract = w3.eth.contract(address=dao_addr, abi=DAO_OPTIMIZED_ABI)
+    proposal_created_event = dao_contract.events.ProposalCreated()
+    event_filter = proposal_created_event.process_receipt(receipt)
+    if len(event_filter) > 0:
+        proposal_id = event_filter[0].args.proposalId
+    else:
+        raise Exception("ERROR: ProposalCreated event not found in transaction receipt.")
+    res.proposal_id = proposal_id
+
+    delay_blocks = VOTING_DELAY + 1
+    wait_for_blocks(w3, delay_blocks)
+
     # 3. DELEGATION (Setup cost, skipped if already done)
     opt_token_contract = w3.eth.contract(address=OPT_TOKEN_ADDR, abi=TOKEN_ABI)
     print("  [Optimized] Ensuring all voters are delegated (one-time setup cost)...")
@@ -414,6 +463,13 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
 
     
     # 4. VOTE (61 Votes - Low cost due to snapshots/ERC20Votes)
+    dao_contract = w3.eth.contract(address=dao_addr, abi=DAO_OPTIMIZED_ABI)
+    proposal_state = dao_contract.functions.state(res.proposal_id).call()
+    if proposal_state != 1: # 1 means Active
+        raise Exception(f"Proposal state is {proposal_state}. Expected 1 (Active). Cannot proceed with voting.")
+    else:
+        print(f"Proposal {res.proposal_id} is now Active (State 1). Starting voting.")
+
     total_vote_gas = 0
     # Start from index 1 (Proposer is index 0)
     for i in range(1, VOTER_COUNT + 1):
@@ -426,7 +482,8 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
         receipt = send_tx(voter_acct, tx_func, voter_nonce)
         total_vote_gas += receipt['gasUsed']
         if i == VOTER_COUNT:
-             res.tx_vote = receipt['tx_hash'] 
+             res.tx_vote = receipt['transactionHash'].hex()
+             tx_data = w3.eth.get_transaction(receipt['transactionHash'])
         time.sleep(0.1) 
         
     res.gas_vote = total_vote_gas
@@ -440,7 +497,8 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     proposer_nonce += 1
     
     res.gas_queue = receipt['gasUsed']
-    res.tx_queue = receipt['txHash']
+    res.tx_queue = receipt['transactionHash'].hex()
+    tx_data = w3.eth.get_transaction(receipt['transactionHash'])
     
     # 6. EXECUTE
     print("  [Optimized] Waiting for Timelock delay to pass (approx 130s)...")
@@ -453,7 +511,8 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     receipt = send_tx(proposer_acct, tx_func, proposer_nonce_updated)
     
     res.gas_execute = receipt['gasUsed']
-    res.tx_execute = receipt['txHash']
+    res.tx_execute = receipt['transactionHash'].hex()
+    tx_data = w3.eth.get_transaction(receipt['transactionHash'])
     res.execution_path = "Timelock"
     
     return res, proposer_nonce
@@ -472,12 +531,12 @@ def main():
     print(f"\n--- RUNNING SCENARIOS WITH {VOTER_COUNT} VOTERS ---")
 
     # --- RUN V1: Vulnerable DAO + Basic Treasury ---
-#    print("\n--- Running V1 (Vulnerable DAO + Basic Treasury) ---")
-#    v1_res, proposer_nonce_vul = run_scenario_vulnerable(V1_DAO_ADDR, V1_TREASURY_ADDR, proposer_nonce_vul)
+    print("\n--- Running V1 (Vulnerable DAO + Basic Treasury) ---")
+    v1_res, proposer_nonce_vul = run_scenario_vulnerable(V1_DAO_ADDR, V1_TREASURY_ADDR, proposer_nonce_vul)
 
     # --- RUN V2: Vulnerable DAO + Secure Treasury ---
-#    print("\n--- Running V2 (Vulnerable DAO + Secure Treasury) ---")
-#    v2_res, proposer_nonce_vul = run_scenario_vulnerable(V2_DAO_ADDR, V2_TREASURY_ADDR, proposer_nonce_vul)
+    print("\n--- Running V2 (Vulnerable DAO + Secure Treasury) ---")
+    v2_res, proposer_nonce_vul = run_scenario_vulnerable(V2_DAO_ADDR, V2_TREASURY_ADDR, proposer_nonce_vul)
 
     # --- RUN V3: Optimized DAO + Basic Treasury ---
     print("\n--- Running V3 (Optimized DAO + Basic Treasury) ---")

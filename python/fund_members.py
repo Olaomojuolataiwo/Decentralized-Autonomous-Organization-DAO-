@@ -26,7 +26,7 @@ VUL_MEMBERS_FILE = "../dao_vul_members.json"
 
 # Amount of native currency (ETH/SepoliaETH) to send to each address
 # 0.001 ETH is 1e15 Wei, which is enough for multiple transactions
-FUNDING_AMOUNT_ETH = 0.001
+FUNDING_AMOUNT_ETH = 0.0016
 
 if not RPC_URL or not PRIVATE_KEY:
     raise SystemExit("RPC_URL and PRIVATE_KEY environment variables must be set.")
@@ -51,13 +51,13 @@ def load_all_member_addresses() -> set:
     all_addresses = set()
     
     # 1. Load Optimized Members
-    try:
-        with open(OPT_MEMBERS_FILE, "r") as f:
-            optimized_members = json.load(f)
-            for m in optimized_members:
-                all_addresses.add(Web3.to_checksum_address(m['address']))
-    except FileNotFoundError:
-        print(f"Warning: Optimized member file not found at {OPT_MEMBERS_FILE}")
+#    try:
+#        with open(OPT_MEMBERS_FILE, "r") as f:
+#            optimized_members = json.load(f)
+#            for m in optimized_members:
+#                all_addresses.add(Web3.to_checksum_address(m['address']))
+#    except FileNotFoundError:
+#        print(f"Warning: Optimized member file not found at {OPT_MEMBERS_FILE}")
 
     # 2. Load Vulnerable Members (using 'address' or 'privateKey' dictionary keys)
     try:
@@ -125,6 +125,14 @@ def main():
         return
 
     print(f"Successfully loaded {len(member_addresses)} unique member addresses.")
+
+    # Define the exact number of members you want to fund
+    NUM_MEMBERS_TO_FUND = 62 
+    member_addresses_list = list(member_addresses)
+
+    # Use slicing on the new list
+    members_to_fund = member_addresses_list[:NUM_MEMBERS_TO_FUND]
+
     
     # Get the current nonce for the sender (deployer)
     nonce = w3.eth.get_transaction_count(owner_addr)
@@ -132,32 +140,30 @@ def main():
     
     total_gas_spent = 0
     total_eth_spent = 0
-    
-    for i, member_addr in enumerate(member_addresses):
-        
-        # Check current balance of deployer before sending
+    for i, member_addr in enumerate(members_to_fund):
+
+    # Check current balance of deployer before sending
         sender_balance = w3.eth.get_balance(owner_addr)
         if sender_balance < FUNDING_AMOUNT_WEI + w3.eth.gas_price * 21000:
             print("\nFATAL ERROR: Deployer account ran out of ETH for funding!")
             print(f"Please fund the deployer address ({owner_addr}) and restart.")
-            break
-            
-        print(f"[{i+1}/{len(member_addresses)}] Sending {FUNDING_AMOUNT_ETH} ETH to {member_addr}...")
-        
-        try:
-            tx_hash, gas_used = send_eth_transaction(member_addr, nonce)
-            total_gas_spent += gas_used
-            total_eth_spent += FUNDING_AMOUNT_WEI
-            print(f"    -> SUCCESS: Hash: {tx_hash} | Gas Used: {gas_used}")
-            nonce += 1
-            # Small pause to avoid RPC node throttling
-            time.sleep(0.05) 
-            
-        except Exception as e:
-            print(f"    -> FAILURE: Error sending ETH to {member_addr}: {e}")
-            # Keep the nonce the same if the transaction failed to be sent by the node (e.g., funding error)
-            # If the script fails here, you need to fix the underlying issue (likely funding).
-            break
+
+    # The progress indicator now uses the fixed total of 62
+    print(f"[{i+1}/{NUM_MEMBERS_TO_FUND}] Sending {FUNDING_AMOUNT_ETH} ETH to {member_addr}...")
+
+    try:
+        tx_hash, gas_used = send_eth_transaction(member_addr, nonce)
+        total_gas_spent += gas_used
+        total_eth_spent += FUNDING_AMOUNT_WEI
+        print(f"    -> SUCCESS: Hash: {tx_hash} | Gas Used: {gas_used}")
+        nonce += 1
+        # Small pause to avoid RPC node throttling
+        time.sleep(0.05)
+
+    except Exception as e:
+        print(f"    -> FAILURE: Error sending ETH to {member_addr}: {e}")
+        # Keep the nonce the same if the transaction failed to be sent by the node (e.g., funding error)
+        # If the script fails here, you need to fix the underlying issue (likely funding).
 
     print("\n--- FUNDING COMPLETE ---")
     print(f"Funded {nonce - w3.eth.get_transaction_count(owner_addr) + nonce - w3.eth.get_transaction_count(owner_addr)} addresses.")
