@@ -113,6 +113,7 @@ def send_eth_transaction(to_address: str, nonce: int) -> tuple[str, int]:
     return tx_hash, receipt.gasUsed
 
 # --- MAIN EXECUTION ---
+# --- MAIN EXECUTION ---
 def main():
     if not w3.is_connected():
         print("Error: Could not connect to RPC URL.")
@@ -123,14 +124,11 @@ def main():
     if not member_addresses:
         print("Error: No member addresses were loaded. Check your JSON files.")
         return
-
+    # ... (connection and load_member_addresses code remains the same)
     print(f"Successfully loaded {len(member_addresses)} unique member addresses.")
 
-    # Define the exact number of members you want to fund
     NUM_MEMBERS_TO_FUND = 62 
     member_addresses_list = list(member_addresses)
-
-    # Use slicing on the new list
     members_to_fund = member_addresses_list[:NUM_MEMBERS_TO_FUND]
 
     
@@ -139,35 +137,43 @@ def main():
     print(f"Starting transaction nonce: {nonce}")
     
     total_gas_spent = 0
-    total_eth_spent = 0
+    total_eth_sent = 0 # Initialize a cleaner variable for the total value
+    successful_count = 0 # CRITICAL: New variable to track success
+    
+    # --- LOOP START ---
     for i, member_addr in enumerate(members_to_fund):
-
-    # Check current balance of deployer before sending
+        
+        # Check current balance of deployer before sending
         sender_balance = w3.eth.get_balance(owner_addr)
         if sender_balance < FUNDING_AMOUNT_WEI + w3.eth.gas_price * 21000:
             print("\nFATAL ERROR: Deployer account ran out of ETH for funding!")
             print(f"Please fund the deployer address ({owner_addr}) and restart.")
+            # Added break here to stop execution if funds are insufficient
+            break 
+            
+        # The progress indicator is now inside the properly indented loop
+        print(f"[{i+1}/{NUM_MEMBERS_TO_FUND}] Sending {FUNDING_AMOUNT_ETH} ETH to {member_addr}...")
 
-    # The progress indicator now uses the fixed total of 62
-    print(f"[{i+1}/{NUM_MEMBERS_TO_FUND}] Sending {FUNDING_AMOUNT_ETH} ETH to {member_addr}...")
+        try:
+            # All logic below is now properly INSIDE the loop
+            tx_hash, gas_used = send_eth_transaction(member_addr, nonce)
+            total_gas_spent += gas_used
+            total_eth_sent += FUNDING_AMOUNT_WEI # Changed to use the cleaner variable
+            successful_count += 1 # Increment success counter
+            print(f"    -> SUCCESS: Hash: {tx_hash} | Gas Used: {gas_used}")
+            nonce += 1
+            # Small pause to avoid RPC node throttling
+            time.sleep(0.05)
 
-    try:
-        tx_hash, gas_used = send_eth_transaction(member_addr, nonce)
-        total_gas_spent += gas_used
-        total_eth_spent += FUNDING_AMOUNT_WEI
-        print(f"    -> SUCCESS: Hash: {tx_hash} | Gas Used: {gas_used}")
-        nonce += 1
-        # Small pause to avoid RPC node throttling
-        time.sleep(0.05)
-
-    except Exception as e:
-        print(f"    -> FAILURE: Error sending ETH to {member_addr}: {e}")
-        # Keep the nonce the same if the transaction failed to be sent by the node (e.g., funding error)
-        # If the script fails here, you need to fix the underlying issue (likely funding).
+        except Exception as e:
+            print(f"    -> FAILURE: Error sending ETH to {member_addr}: {e}")
+            # If a transaction fails, we stop to prevent nonce errors
+            break 
+    # --- LOOP ENDS HERE ---
 
     print("\n--- FUNDING COMPLETE ---")
-    print(f"Funded {nonce - w3.eth.get_transaction_count(owner_addr) + nonce - w3.eth.get_transaction_count(owner_addr)} addresses.")
-    print(f"Total ETH sent (value): {w3.from_wei(total_eth_spent, 'ether')} ETH")
+    print(f"Funded {successful_count} addresses (out of {NUM_MEMBERS_TO_FUND}).")
+    print(f"Total ETH sent (value): {w3.from_wei(total_eth_sent, 'ether')} ETH")
     print(f"Total gas used for funding: {total_gas_spent} gas")
     print("You can now re-run gas_optimizer.py.")
 

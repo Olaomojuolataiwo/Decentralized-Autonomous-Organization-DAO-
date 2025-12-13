@@ -40,6 +40,7 @@ PROPOSAL_DESCRIPTION = "Scenario 1: A Target Withdrawal Test"
 # --- DYNAMIC MEMBER LOADING ---
 
 MemberData = Dict[str, str]
+REQUIRED_ETH_FOR_VOTE = Web3.to_wei(0.0016, 'ether')
 
 def load_vulnerable_members(keys_file="../dao_vul_members.json", addrs_file="../dao_addresses.txt") -> List[MemberData]:
     """Loads vulnerable members: addresses from TXT, keys from JSON."""
@@ -300,7 +301,7 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
     
     # Get proposalId from storage slot 3 (specific to VulnerableDAO)
     proposal_id = w3.to_int(w3.eth.get_storage_at(dao_addr, 3))
-    
+
     # 3. VOTE (61 Votes)
     total_vote_gas = 0
     
@@ -309,7 +310,11 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
         member_data = VULNERABLE_MEMBERS[i]
         voter_acct = Account.from_key(member_data['privateKey'])
         voter_nonce = w3.eth.get_transaction_count(voter_acct.address)
-        
+        voter_balance = w3.eth.get_balance(voter_acct.address)
+        if voter_balance < REQUIRED_ETH_FOR_VOTE:
+            print(f"Skipping Vote {i} (Vulnerable): {voter_acct.address} has insufficient ETH ({w3.from_wei(voter_balance, 'ether'):.4f} ETH).")
+            continue
+
         tx_func = dao_contract.functions.castVote(proposal_id, True) 
         
         # The final vote (i == VOTER_COUNT) includes O(N) loop + execution logic
@@ -476,7 +481,11 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
         member_data = OPTIMIZED_MEMBERS[i]
         voter_acct = Account.from_key(member_data['privateKey'])
         voter_nonce = w3.eth.get_transaction_count(voter_acct.address)
-        
+        voter_balance = w3.eth.get_balance(voter_acct.address)
+        if voter_balance < REQUIRED_ETH_FOR_VOTE:
+            print(f"Skipping Vote {i} (Optimized): {voter_acct.address} has insufficient ETH ({w3.from_wei(voter_balance, 'ether'):.4f} ETH).")
+            continue
+
         tx_func = dao_contract.functions.castVote(proposal_id, 1) # 1=For
         
         receipt = send_tx(voter_acct, tx_func, voter_nonce)
@@ -524,7 +533,7 @@ def main():
         return
 
     # Nonce for the proposer accounts
-    proposer_nonce_vul = w3.eth.get_transaction_count(Account.from_key(VUL_PROPOSER_KEY).address)
+    proposer_nonce_vul = w3.eth.get_transaction_count(Account.from_key(VUL_PROPOSER_KEY).address) + 2
     proposer_nonce_opt = w3.eth.get_transaction_count(Account.from_key(OPT_PROPOSER_KEY).address)
 
 
