@@ -34,7 +34,7 @@ VOTER_COUNT = 61
 # Test Parameters
 RECIPIENT_ADDR = Web3.to_checksum_address("0x" + "DEADBEEF" * 5)
 PROPOSAL_VALUE = Web3.to_wei(0.0004, 'ether')
-PROPOSAL_DESCRIPTION = "Scenario 1: A Target Withdrawal Test"
+PROPOSAL_DESCRIPTION = "Target Withdrawal Test."
 
 
 # --- DYNAMIC MEMBER LOADING ---
@@ -277,14 +277,43 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
     proposer_acct = Account.from_key(VUL_PROPOSER_KEY)
     dao_contract = w3.eth.contract(address=dao_addr, abi=VULNERABLE_GOVERNOR_ABI)
     
+    token_contract = w3.eth.contract(address=VUL_TOKEN_ADDR, abi=TOKEN_ABI) 
+    proposer_addr = proposer_acct.address
+    token_balance = token_contract.functions.balanceOf(proposer_addr).call()
+    print(f"DEBUG VULNERABLE: Proposer ({proposer_addr}) Token Balance: {token_balance}")
+    current_votes = token_balance
+    print(f"DEBUG VULNERABLE: Proposer ({proposer_addr}) Token Balance: {w3.from_wei(token_balance, 'ether'):.2f} VUL_TOKEN")
+    print(f"DEBUG VULNERABLE: Proposer Voting Power (assumed balance): {w3.from_wei(current_votes, 'ether'):.2f} VUL_TOKEN")
+    print(f"DEBUG VULNERABLE: Proposer Voting Power: {current_votes}")
+    if token_balance == 0:
+    # If tokens are zero, this is a setup error
+        print("-" * 50)
+        print("FATAL: Proposer has 0 tokens. Cannot meet DAO proposal threshold.")
+        print("-" * 50)
+        raise Exception("Proposer lacks tokens for VULNERABLE DAO proposal.")
+
+
     # 1. Prepare Calldata
     treasury_contract = w3.eth.contract(address=treasury_addr, abi=TREASURY_BASIC_ABI)
     calldata = treasury_contract.encode_abi(
         "executePayment",
         args=[RECIPIENT_ADDR, PROPOSAL_VALUE]
     )
+    if not calldata or calldata == '0x':
+        print("-" * 50)
+        print("FATAL: Calldata encoding failed or resulted in empty data.")
+        print(f"Check TREASURY_BASIC_ABI and arguments: RECIPIENT_ADDR, PROPOSAL_VALUE.")
+        print("-" * 50)
+        raise Exception("Invalid Calldata")
 
     # 2. PROPOSE
+    print("\n--- PROPOSAL TRANSACTION DEBUG ---")
+    print(f"Target: {treasury_addr}")
+    print(f"Value: 0 (ETH)")
+    print(f"Calldata (1st 20 chars): {calldata[:20]}...")
+    print(f"Description: {PROPOSAL_DESCRIPTION}")
+    print(f"Proposer Nonce: {proposer_nonce}\n")
+
     tx_func = dao_contract.functions.propose(
         treasury_addr,          # address target
         0,                      # uint256 value (sending ETH, which VULNERABLE_DAO supports)
@@ -533,7 +562,7 @@ def main():
         return
 
     # Nonce for the proposer accounts
-    proposer_nonce_vul = w3.eth.get_transaction_count(Account.from_key(VUL_PROPOSER_KEY).address) + 2
+    proposer_nonce_vul = w3.eth.get_transaction_count(Account.from_key(VUL_PROPOSER_KEY).address) 
     proposer_nonce_opt = w3.eth.get_transaction_count(Account.from_key(OPT_PROPOSER_KEY).address)
 
 
@@ -545,6 +574,8 @@ def main():
 
     # --- RUN V2: Vulnerable DAO + Secure Treasury ---
     print("\n--- Running V2 (Vulnerable DAO + Secure Treasury) ---")
+    proposer_acct = Account.from_key(VUL_PROPOSER_KEY)
+    proposer_nonce_vul = w3.eth.get_transaction_count(proposer_acct.address)
     v2_res, proposer_nonce_vul = run_scenario_vulnerable(V2_DAO_ADDR, V2_TREASURY_ADDR, proposer_nonce_vul)
 
     # --- RUN V3: Optimized DAO + Basic Treasury ---
@@ -553,6 +584,8 @@ def main():
     
     # --- RUN V4: Optimized DAO + Secure Treasury (The Target) ---
     print("\n--- Running V4 (Optimized DAO + Secure Treasury) ---")
+    proposer_acct = Account.from_key(OPT_PROPOSER_KEY)
+    proposer_nonce_opt = w3.eth.get_transaction_count(proposer_acct.address)
     v4_res, _ = run_scenario_optimized(V4_DAO_ADDR, V4_TREASURY_ADDR, proposer_nonce_opt)
     
     
