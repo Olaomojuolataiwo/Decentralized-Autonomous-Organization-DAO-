@@ -24,9 +24,12 @@ CHAIN_ID = int(os.getenv("CHAIN_ID", "11155111"))  # Sepolia chain id default
 OPT_MEMBERS_FILE = "dao_members.json"
 VUL_MEMBERS_FILE = "../dao_vul_members.json"
 
-# Amount of native currency (ETH/SepoliaETH) to send to each address
-# 0.001 ETH is 1e15 Wei, which is enough for multiple transactions
-FUNDING_AMOUNT_ETH = 0.0016
+# --- FUNDING PARAMETERS ---
+# Minimum required balance for a voter (0.005 ETH covers 2 votes at 1 Gwei + buffer)
+TARGET_MIN_BALANCE_ETH = 0.005 
+
+# Small buffer amount to ensure the *funding transaction itself* clears
+TRANSACTION_BUFFER_ETH = 0.001
 
 if not RPC_URL or not PRIVATE_KEY:
     raise SystemExit("RPC_URL and PRIVATE_KEY environment variables must be set.")
@@ -35,13 +38,14 @@ w3 = Web3(Web3.HTTPProvider(RPC_URL))
 owner_acct = Account.from_key(PRIVATE_KEY)
 owner_addr = owner_acct.address
 
-# Convert funding amount to Wei
-FUNDING_AMOUNT_WEI = w3.to_wei(FUNDING_AMOUNT_ETH, 'ether')
+# Convert funding amounts to Wei
+TARGET_MIN_BALANCE_WEI = w3.to_wei(TARGET_MIN_BALANCE_ETH, 'ether')
+TRANSACTION_BUFFER_WEI = w3.to_wei(TRANSACTION_BUFFER_ETH, 'ether')
 
-print(f"--- MEMBER FUNDING SCRIPT ---")
+print(f"--- MEMBER FUNDING SCRIPT (CALCULATED TOP-UP)---")
 print(f"RPC: {RPC_URL}")
 print(f"Sender (Deployer): {owner_addr}")
-print(f"Amount per address: {FUNDING_AMOUNT_ETH} ETH")
+print(f"Target Min Balance: {TARGET_MIN_BALANCE_ETH} ETH")
 print(f"Chain ID: {CHAIN_ID}\n")
 
 # --- HELPER FUNCTIONS ---
@@ -51,13 +55,13 @@ def load_all_member_addresses() -> set:
     all_addresses = set()
     
     # 1. Load Optimized Members
-#    try:
-#        with open(OPT_MEMBERS_FILE, "r") as f:
-#            optimized_members = json.load(f)
-#            for m in optimized_members:
-#                all_addresses.add(Web3.to_checksum_address(m['address']))
-#    except FileNotFoundError:
-#        print(f"Warning: Optimized member file not found at {OPT_MEMBERS_FILE}")
+    try:
+        with open(OPT_MEMBERS_FILE, "r") as f:
+            optimized_members = json.load(f)
+            for m in optimized_members:
+                all_addresses.add(Web3.to_checksum_address(m['address']))
+    except FileNotFoundError:
+        print(f"Warning: Optimized member file not found at {OPT_MEMBERS_FILE}")
 
     # 2. Load Vulnerable Members (using 'address' or 'privateKey' dictionary keys)
     try:
@@ -85,7 +89,7 @@ def load_all_member_addresses() -> set:
 
     return all_addresses
 
-def send_eth_transaction(to_address: str, nonce: int) -> tuple[str, int]:
+def send_eth_transaction(to_address: str, top_up_amount_wei: int, nonce: int) -> tuple[str, int]:
     """Builds, signs, and sends a simple ETH transfer transaction."""
     gas_price = w3.eth.gas_price
     
@@ -93,7 +97,7 @@ def send_eth_transaction(to_address: str, nonce: int) -> tuple[str, int]:
     tx = {
         'from': owner_addr,
         'to': to_address,
-        'value': FUNDING_AMOUNT_WEI,
+        'value': top_up_amount_wei,
         'gas': 21000, # Base gas fee for ETH transfer
         'gasPrice': gas_price,
         'nonce': nonce,
@@ -127,10 +131,8 @@ def main():
     # ... (connection and load_member_addresses code remains the same)
     print(f"Successfully loaded {len(member_addresses)} unique member addresses.")
 
-    NUM_MEMBERS_TO_FUND = 62 
-    member_addresses_list = list(member_addresses)
-    members_to_fund = member_addresses_list[:NUM_MEMBERS_TO_FUND]
-
+    members_to_fund = list(member_addresses)
+    total_members = len(members_to_fund)
     
     # Get the current nonce for the sender (deployer)
     nonce = w3.eth.get_transaction_count(owner_addr)
@@ -142,24 +144,38 @@ def main():
     
     # --- LOOP START ---
     for i, member_addr in enumerate(members_to_fund):
+        current_balance_wei = w3.eth.get_balance(member_addr)
+        
+        # --- CONDITIONAL FUNDING CHECK ---
+        if current_balance_wei >= TARGET_MIN_BALANCE_WEI:
+            # Update the print statement to use total_members
+            print(f"[{i+1}/{total_members}] SKIP: {member_addr} has sufficient ETH ({w3.from_wei(current_balance_wei, 'ether'):.4f} ETH).")
+            continue
+        # --- CALCULATE REQUIRED TOP-UP AMOUNT ---
+        # Amount needed to reach the target minimum
+        shortfall_wei = TARGET_MIN_BALANCE_WEI - current_balance_wei
+        
+        # Total amount to send: shortfall + buffer for the funding transaction itself
+        top_up_amount_wei = shortfall_wei + TRANSACTION_BUFFER_WEI
         
         # Check current balance of deployer before sending
         sender_balance = w3.eth.get_balance(owner_addr)
-        if sender_balance < FUNDING_AMOUNT_WEI + w3.eth.gas_price * 21000:
+        required_sender_eth = top_up_amount_wei + w3.to_wei('0.1', 'gwei') * 21000
+        if sender_balance < required_sender_eth:
             print("\nFATAL ERROR: Deployer account ran out of ETH for funding!")
             print(f"Please fund the deployer address ({owner_addr}) and restart.")
             # Added break here to stop execution if funds are insufficient
             break 
-            
-        # The progress indicator is now inside the properly indented loop
-        print(f"[{i+1}/{NUM_MEMBERS_TO_FUND}] Sending {FUNDING_AMOUNT_ETH} ETH to {member_addr}...")
+
+        print(f"    -> Current: {w3.from_wei(current_balance_wei, 'ether'):.4f} ETH | Shortfall: {w3.from_wei(shortfall_wei, 'ether'):.6f} ETH | Sending: {w3.from_wei(top_up_amount_wei, 'ether'):.6f} ETH")            
 
         try:
-            # All logic below is now properly INSIDE the loop
-            tx_hash, gas_used = send_eth_transaction(member_addr, nonce)
+            # Pass the calculated top-up amount to the helper function
+            tx_hash, gas_used = send_eth_transaction(member_addr, top_up_amount_wei, nonce)
+            
             total_gas_spent += gas_used
-            total_eth_sent += FUNDING_AMOUNT_WEI # Changed to use the cleaner variable
-            successful_count += 1 # Increment success counter
+            total_eth_sent += top_up_amount_wei 
+            successful_count += 1 
             print(f"    -> SUCCESS: Hash: {tx_hash} | Gas Used: {gas_used}")
             nonce += 1
             # Small pause to avoid RPC node throttling
@@ -167,12 +183,12 @@ def main():
 
         except Exception as e:
             print(f"    -> FAILURE: Error sending ETH to {member_addr}: {e}")
-            # If a transaction fails, we stop to prevent nonce errors
             break 
     # --- LOOP ENDS HERE ---
 
     print("\n--- FUNDING COMPLETE ---")
-    print(f"Funded {successful_count} addresses (out of {NUM_MEMBERS_TO_FUND}).")
+    # Update final print statement
+    print(f"Funded {successful_count} addresses (out of {total_members}).")
     print(f"Total ETH sent (value): {w3.from_wei(total_eth_sent, 'ether')} ETH")
     print(f"Total gas used for funding: {total_gas_spent} gas")
     print("You can now re-run gas_optimizer.py.")
