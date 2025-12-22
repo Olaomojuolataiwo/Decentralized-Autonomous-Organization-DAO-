@@ -29,12 +29,12 @@ OPT_TOKEN_ADDR = os.getenv("OPT_TOKEN_ADDR")    # MembershipTokenMintable
 TIMELOCK_ADDR = os.getenv("TIMELOCK_ADDR")      # TimelockController
 
 # For O(N) cost demonstration, we need a majority: 61 votes
-VOTER_COUNT = 61 
+VOTER_COUNT = 40
 
 # Test Parameters
 RECIPIENT_ADDR = Web3.to_checksum_address("0x" + "DEADBEEF" * 5)
 PROPOSAL_VALUE = Web3.to_wei(0.0004, 'ether')
-PROPOSAL_DESCRIPTION = "Target Withdrawal Test."
+PROPOSAL_DESCRIPTION = "First Target Withdrawal Test."
 
 
 # --- DYNAMIC MEMBER LOADING ---
@@ -336,29 +336,38 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
     
     # Start from index 1 (Proposer is index 0) and vote up to VOTER_COUNT (total 61 votes)
     for i in range(1, VOTER_COUNT + 1):
-        member_data = VULNERABLE_MEMBERS[i]
-        voter_acct = Account.from_key(member_data['privateKey'])
-        voter_nonce = w3.eth.get_transaction_count(voter_acct.address)
-        voter_balance = w3.eth.get_balance(voter_acct.address)
-        if voter_balance < REQUIRED_ETH_FOR_VOTE:
-            print(f"Skipping Vote {i} (Vulnerable): {voter_acct.address} has insufficient ETH ({w3.from_wei(voter_balance, 'ether'):.4f} ETH).")
-            continue
+        if i == VOTER_COUNT:
+            print(f"\n!!! DESIGNATED EXECUTOR: Using Proposer for high-gas Final Vote {i} !!!")
+            voter_acct = Account.from_key(VUL_PROPOSER_KEY) 
+            REQUIRED_FUNDS = w3.to_wei('0.025', 'ether') # Threshold for the heavy O(N) execution
+        else:
+            member_data = VULNERABLE_MEMBERS[i]
+            voter_acct = Account.from_key(member_data['privateKey'])
+            voter_nonce = w3.eth.get_transaction_count(voter_acct.address)
+            voter_balance = w3.eth.get_balance(voter_acct.address)
+            if voter_balance < REQUIRED_ETH_FOR_VOTE:
+                role = "Proposer/Executor" if i == VOTER_COUNT else "Voter"
+                print(f"Skipping Vote {i} ({role}): {voter_acct.address} has insufficient ETH ({w3.from_wei(voter_balance, 'ether'):.4f} ETH).")
+                continue
 
         tx_func = dao_contract.functions.castVote(proposal_id, True) 
-        
+
+                
         # The final vote (i == VOTER_COUNT) includes O(N) loop + execution logic
         if i == VOTER_COUNT:
             print(f"  [Vulnerable] Measuring final vote (Vote {i}) which includes O(N) check and execution...")
+            fresh_proposer_nonce = w3.eth.get_transaction_count(voter_acct.address, 'pending')
+            print(f"  [DEBUG] Blockchain expects nonce: {fresh_proposer_nonce} (Script was trying to use {voter_nonce})")
             signed_tx = voter_acct.sign_transaction(
             tx_func.build_transaction({
                 'from': voter_acct.address,
-                'nonce': voter_nonce,
+                'nonce': fresh_proposer_nonce,
                 'gas': 2000000,
                 'maxFeePerGas': w3.to_wei('10', 'gwei'),
                 'maxPriorityFeePerGas': w3.to_wei('2', 'gwei'),
             })
             )
-            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             print(f" > Tx Hash: {w3.to_hex(tx_hash)}")
         
             # 2. Get the receipt for gas measurement
