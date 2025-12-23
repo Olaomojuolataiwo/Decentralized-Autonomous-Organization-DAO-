@@ -15,7 +15,7 @@ contract DeployV3_ODAO_TBasic is Script {
     // Configuration Constants (Must match your testing parameters)
     uint256 public constant MIN_DELAY = 120; // 2 minutes (Timelock delay)
     uint256 public constant VOTING_DELAY = 1;
-    uint256 public constant VOTING_PERIOD = 8;
+    uint256 public constant VOTING_PERIOD = 200;
     uint256 public constant QUORUM_NUMERATOR = 4; // 4% Quorum
 
     function run() external {

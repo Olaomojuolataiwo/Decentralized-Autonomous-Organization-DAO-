@@ -34,7 +34,7 @@ VOTER_COUNT = 40
 # Test Parameters
 RECIPIENT_ADDR = Web3.to_checksum_address("0x" + "DEADBEEF" * 5)
 PROPOSAL_VALUE = Web3.to_wei(0.0004, 'ether')
-PROPOSAL_DESCRIPTION = "First Target Withdrawal Test."
+PROPOSAL_DESCRIPTION = f"Proposal to transfer funds to treasury {int(time.time())}"
 
 
 # --- DYNAMIC MEMBER LOADING ---
@@ -505,6 +505,37 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
         time.sleep(0.05) 
 
     
+    # --- ISOLATION CHECK: VOTING POWER & QUORUM ---
+    print("\n--- Pre-Vote Diagnostic Check ---")
+    
+    # 1. Get the Snapshot Block (The block where voting power was "frozen")
+    snapshot_block = dao_contract.functions.proposalSnapshot(proposal_id).call()
+    
+    # 2. Get the Quorum required at that snapshot
+    quorum_required = dao_contract.functions.quorum(snapshot_block).call()
+    
+    # 3. Check a sample voter's weight (e.g., the first voter in your list)
+    sample_voter = Web3.to_checksum_address(OPTIMIZED_MEMBERS[3]['address'])
+    
+    # Assuming 'token_contract' is the ERC20 governance token for the optimized DAO
+    voter_balance = opt_token_contract.functions.balanceOf(sample_voter).call()
+    voter_weight = opt_token_contract.functions.getPastVotes(sample_voter, snapshot_block).call()
+
+    print(f"Proposal Snapshot Block: {snapshot_block}")
+    print(f"Quorum Required:         {w3.from_wei(quorum_required, 'ether')} votes")
+    print(f"Sample Voter:            {sample_voter}")
+    print(f"Current Token Balance:   {w3.from_wei(voter_balance, 'ether')} tokens")
+    print(f"VOTING POWER AT SNAPSHOT: {w3.from_wei(voter_weight, 'ether')} votes")
+
+    if voter_weight == 0 and voter_balance > 0:
+        print("DIAGNOSIS: [!] Delegation Issue. Tokens held but weight is 0 at snapshot.")
+    elif voter_weight == 0 and voter_balance == 0:
+        print("DIAGNOSIS: [!] Distribution Issue. Account has no tokens.")
+    elif voter_weight > 0:
+        print(f"DIAGNOSIS: [✓] Voting weight is active. Expected total: {w3.from_wei(voter_weight * 40, 'ether')}")
+    
+    print("----------------------------------\n")
+
     # 4. VOTE (61 Votes - Low cost due to snapshots/ERC20Votes)
     dao_contract = w3.eth.contract(address=dao_addr, abi=DAO_OPTIMIZED_ABI)
     proposal_state = dao_contract.functions.state(res.proposal_id).call()
@@ -578,14 +609,14 @@ def main():
     print(f"\n--- RUNNING SCENARIOS WITH {VOTER_COUNT} VOTERS ---")
 
     # --- RUN V1: Vulnerable DAO + Basic Treasury ---
-    print("\n--- Running V1 (Vulnerable DAO + Basic Treasury) ---")
-    v1_res, proposer_nonce_vul = run_scenario_vulnerable(V1_DAO_ADDR, V1_TREASURY_ADDR, proposer_nonce_vul)
+#    print("\n--- Running V1 (Vulnerable DAO + Basic Treasury) ---")
+#    v1_res, proposer_nonce_vul = run_scenario_vulnerable(V1_DAO_ADDR, V1_TREASURY_ADDR, proposer_nonce_vul)
 
     # --- RUN V2: Vulnerable DAO + Secure Treasury ---
-    print("\n--- Running V2 (Vulnerable DAO + Secure Treasury) ---")
-    proposer_acct = Account.from_key(VUL_PROPOSER_KEY)
-    proposer_nonce_vul = w3.eth.get_transaction_count(proposer_acct.address)
-    v2_res, proposer_nonce_vul = run_scenario_vulnerable(V2_DAO_ADDR, V2_TREASURY_ADDR, proposer_nonce_vul)
+#    print("\n--- Running V2 (Vulnerable DAO + Secure Treasury) ---")
+#    proposer_acct = Account.from_key(VUL_PROPOSER_KEY)
+#    proposer_nonce_vul = w3.eth.get_transaction_count(proposer_acct.address)
+#    v2_res, proposer_nonce_vul = run_scenario_vulnerable(V2_DAO_ADDR, V2_TREASURY_ADDR, proposer_nonce_vul)
 
     # --- RUN V3: Optimized DAO + Basic Treasury ---
     print("\n--- Running V3 (Optimized DAO + Basic Treasury) ---")
