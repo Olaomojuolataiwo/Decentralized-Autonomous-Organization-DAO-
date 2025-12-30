@@ -187,6 +187,32 @@ def wait_for_blocks(w3, num_blocks):
         
     print(f"Block reached: {w3.eth.block_number}")
 
+def wait_for_proposal_succeeded(dao_contract, proposal_id):
+    """
+    Polls the DAO contract until the proposal hits state 4 (Succeeded).
+    States: 0=Pending, 1=Active, 2=Canceled, 3=Defeated, 4=Succeeded...
+    """
+    print(f"\n[Monitor] Watching Proposal ID: {proposal_id}")
+    
+    while True:
+        state = dao_contract.functions.state(proposal_id).call()
+        
+        if state == 4:
+            print("[Success] Proposal state is now 'Succeeded'. Proceeding to Queue...")
+            break
+        elif state == 3:
+            print("[Error] Proposal was DEFEATED. Check quorum and voting power.")
+            return False
+        elif state == 1:
+            # Optionally get block info to see how much time is left
+            curr_block = w3.eth.block_number
+            print(f"  > State: Active | Curr Block: {curr_block} | Checking again in 5 mins...")
+        else:
+            print(f"  > State: {state} | Waiting for state 4...")
+
+        time.sleep(300) # Wait 5 minutes (300 seconds)
+    return True
+
 def load_abi_from_artifact(contract_name: str, root_path: str = '../out') -> dict:
     """Loads the full ABI from a standard Foundry/Hardhat build artifact path."""
     # Constructs path: ./out/MembershipToken.sol/MembershipToken.json
@@ -492,17 +518,17 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
 
     # 3. DELEGATION (Setup cost, skipped if already done)
     opt_token_contract = w3.eth.contract(address=OPT_TOKEN_ADDR, abi=TOKEN_ABI)
-    print("  [Optimized] Ensuring all voters are delegated (one-time setup cost)...")
-    for i in range(VOTER_COUNT + 1):
-        member_data = OPTIMIZED_MEMBERS[i]
-        member_acct = Account.from_key(member_data['privateKey'])
-        try:
-            tx_func = opt_token_contract.functions.delegate(member_data['address'])
-            member_nonce = w3.eth.get_transaction_count(member_acct.address) 
-            send_tx(member_acct, tx_func, member_nonce)
-        except Exception:
-            pass
-        time.sleep(0.05) 
+#    print("  [Optimized] Ensuring all voters are delegated (one-time setup cost)...")
+#    for i in range(VOTER_COUNT + 1):
+#        member_data = OPTIMIZED_MEMBERS[i]
+#        member_acct = Account.from_key(member_data['privateKey'])
+#        try:
+#            tx_func = opt_token_contract.functions.delegate(member_data['address'])
+#            member_nonce = w3.eth.get_transaction_count(member_acct.address) 
+#            send_tx(member_acct, tx_func, member_nonce)
+#        except Exception:
+#            pass
+#        time.sleep(0.05) 
 
     
     # --- ISOLATION CHECK: VOTING POWER & QUORUM ---
@@ -567,8 +593,11 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     res.gas_vote = total_vote_gas
     
     # 5. QUEUE
-    print("  [Optimized] Waiting for voting period to end (approx 30s)...")
-    time.sleep(30)
+    print("\n[Optimized] Entering Voting Period Wait (Block-based)...")
+
+    # Use the helper to wait until the contract actually allows queueing
+    if not wait_for_proposal_succeeded(dao_contract, proposal_id):
+        raise Exception("Recovery failed: Proposal not successful.")    
     
     tx_func = dao_contract.functions.queue(targets, values, calldatas, description_hash)
     receipt = send_tx(proposer_acct, tx_func, proposer_nonce)
