@@ -101,8 +101,8 @@ total_distributed = per_member_amount * num_members
 total_supply_units = int(TOTAL_SUPPLY_DESIRED * MULT)
 remainder_for_owner = total_supply_units - total_distributed
 
-if remainder_for_owner < 0:
-    raise SystemExit("Per-member allocation * members exceeds total supply. Adjust numbers.")
+#if remainder_for_owner < 0:
+#    raise SystemExit("Per-member allocation * members exceeds total supply. Adjust numbers.")
 
 print(f"Per member amount (raw): {per_member_amount}")
 print(f"Total distributed (raw): {total_distributed}")
@@ -148,18 +148,18 @@ for idx, m in enumerate(members[START_INDEX:], start=START_INDEX):
     # [idx+1/num_members] correctly shows [41/Total].
     
     member_addr = Web3.to_checksum_address(m["address"])
-    print(f"[{idx+1}/{num_members}] Mint -> {member_addr}")
+#    print(f"[{idx+1}/{num_members}] Mint -> {member_addr}")
 
-    tx = token.functions.mint(member_addr, per_member_amount).build_transaction({
-        "chainId": CHAIN_ID,
-        "gas": 500_000,
-        "gasPrice": gas_price,
-        "nonce": nonce,
-        "from": owner_addr,
-    })
+#    tx = token.functions.mint(member_addr, per_member_amount).build_transaction({
+#        "chainId": CHAIN_ID,
+#        "gas": 500_000,
+#        "gasPrice": gas_price,
+#        "nonce": nonce,
+#        "from": owner_addr,
+#    })
 
-    receipt = send_tx(tx)
-    nonce += 1
+#    receipt = send_tx(tx)
+#    nonce += 1
     # delegate (self-delegate)
     print(f"       Delegating to {member_addr}")
     tx2 = token.functions.delegate(member_addr).build_transaction({

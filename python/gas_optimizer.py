@@ -104,6 +104,7 @@ OPT_PROPOSER_KEY = OPTIMIZED_MEMBERS[0]['privateKey']
 w3 = Web3(Web3.HTTPProvider(RPC_URL))
 deployer_acct = Account.from_key(PRIVATE_KEY) # Timelock Admin Key
 deployer_addr = deployer_acct.address
+deployer_nonce = w3.eth.get_transaction_count(deployer_addr)
 
 # --- DATA STRUCTURES & LOGGING ---
 @dataclass
@@ -298,7 +299,7 @@ def log_results(scenario_name: str, vul_res: ScenarioResult, opt_res: ScenarioRe
 
 def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: int) -> Tuple[ScenarioResult, int]:
     """Runs V1/V2 (Vulnerable DAO) lifecycle: propose -> 61x vote (last vote executes)"""
-    
+    global deployer_nonce
     res = ScenarioResult()
     proposer_acct = Account.from_key(VUL_PROPOSER_KEY)
     dao_contract = w3.eth.contract(address=dao_addr, abi=VULNERABLE_GOVERNOR_ABI)
@@ -424,7 +425,7 @@ def run_scenario_vulnerable(dao_addr: str, treasury_addr: str, proposer_nonce: i
 
 def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: int) -> Tuple[ScenarioResult, int]:
     """Runs V3/V4 (Optimized DAO) lifecycle: propose -> 61x castVote -> queue -> execute"""
-    
+    global deployer_nonce
     res = ScenarioResult()
     proposer_acct = Account.from_key(OPT_PROPOSER_KEY)
     dao_contract = w3.eth.contract(address=dao_addr, abi=GOVERNOR_ABI)
@@ -438,7 +439,7 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     token_balance = token_contract.functions.balanceOf(proposer_addr).call()
     print(f"Proposer ({proposer_addr}) Token Balance: {token_balance}")
     current_votes = token_contract.functions.getVotes(proposer_acct.address).call()
-
+    print(f"Proposer ({proposer_addr}) Proposer Votes: {current_votes}")
     # If votes are 0 (as confirmed by debug output), try to delegate
     if current_votes == 0:
         print(f"ATTENTION: Proposer has 0 votes. Attempting re-delegation.")
@@ -562,8 +563,10 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     
     print("----------------------------------\n")
 
-    # 4. VOTE (61 Votes - Low cost due to snapshots/ERC20Votes)
+    # 4. VOTE (40 Votes - Low cost due to snapshots/ERC20Votes)
     dao_contract = w3.eth.contract(address=dao_addr, abi=DAO_OPTIMIZED_ABI)
+    token_addr = dao_contract.functions.token().call()
+    token = w3.eth.contract(address=token_addr, abi=TOKEN_ABI)
     proposal_state = dao_contract.functions.state(res.proposal_id).call()
     if proposal_state != 1: # 1 means Active
         raise Exception(f"Proposal state is {proposal_state}. Expected 1 (Active). Cannot proceed with voting.")
@@ -585,14 +588,105 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
         
         receipt = send_tx(voter_acct, tx_func, voter_nonce)
         total_vote_gas += receipt['gasUsed']
-        if i == VOTER_COUNT:
-             res.tx_vote = receipt['transactionHash'].hex()
-             tx_data = w3.eth.get_transaction(receipt['transactionHash'])
-        time.sleep(0.1) 
-        
+        time.sleep(0.1)
+    # --- ADD PROPOSER (WHALE) VOTE HERE ---
+    print("  [Whale] Casting decisive Proposer vote...")
+    tx_func = dao_contract.functions.castVote(proposal_id, 1)
+    
+    # Note: Using proposer_nonce which was updated after the 'propose' call
+    receipt = send_tx(proposer_acct, tx_func, proposer_nonce)
+    proposer_nonce += 1 # Update for the upcoming 'queue' call
+    
+    total_vote_gas += receipt['gasUsed']
+    
+    # --- Part C: GLOBAL DEPLOYER (The Decisive Vote) ---
+    # Assuming deployer_acct and deployer_nonce are defined in your setup
+    print(f"  [Deployer] Casting GLOBAL WHALE vote from {deployer_addr}...")
+    
+    # 1. Ensure Deployer is delegated to itself (Done once per session)
+    # 2. Cast the vote
+    tx_func = dao_contract.functions.castVote(proposal_id, 1)
+    receipt = send_tx(deployer_acct, tx_func, deployer_nonce)
+    deployer_nonce += 1
+    
+    total_vote_gas += receipt['gasUsed']
+
+    # Record the Proposer's vote as the final tx_vote for the results
+    res.tx_vote = receipt['transactionHash'].hex()
+    tx_data = w3.eth.get_transaction(receipt['transactionHash'])
+    
+    # Save total gas for all 42 votes (40 voters + 1 proposer + deployer)
     res.gas_vote = total_vote_gas
+    print(f"  Total voting gas (42 votes): {total_vote_gas}")
     
     # 5. QUEUE
+    print("\n" + "="*50)
+    print("!!! PRE-QUEUE VOTE AUDIT !!!")
+    
+    # Wait for the voting period to end using the countdown logic
+    deadline_block = dao_contract.functions.proposalDeadline(proposal_id).call()
+    
+    while True:
+        curr_block = w3.eth.block_number
+        if curr_block > deadline_block:
+            print(f"\n[!] Deadline reached (Current: {curr_block} > Deadline: {deadline_block})")
+            break
+        
+        blocks_left = deadline_block - curr_block
+        print(f"  > Waiting for deadline... {blocks_left} blocks remaining (~{blocks_left*12/60:.1f} mins)", end='\r')
+        time.sleep(30)
+
+    # --- BLOCKCHAIN VOTE CONFIRMATION ---
+    # proposalVotes returns (againstVotes, forVotes, abstainVotes)
+    vote_stats = dao_contract.functions.proposalVotes(proposal_id).call()
+    quorum_required = dao_contract.functions.quorum(deadline_block - 1).call()
+    
+    against_v = w3.from_wei(vote_stats[0], 'ether')
+    for_v     = w3.from_wei(vote_stats[1], 'ether')
+    abstain_v = w3.from_wei(vote_stats[2], 'ether')
+    total_cast = against_v + for_v + abstain_v
+
+    print("\n" + "-"*30)
+    print(f"FOR Votes:     {for_v}")
+    print(f"AGAINST Votes: {against_v}")
+    print(f"ABSTAIN Votes: {abstain_v}")
+    print(f"Total Cast:    {total_cast}")
+    print(f"Quorum Needed: {w3.from_wei(quorum_required, 'ether')}")
+    print("-" * 30)
+
+    total_supply = token.functions.totalSupply().call()
+    print(f"DEBUG: Total Supply: {w3.from_wei(total_supply, 'ether')}")
+
+    # Check the actual success logic of the Governor
+    try:
+        # Some Governors have a 'proposalThreshold' or 'voteSucceeded' check
+        # Let's see if the total 'FOR' is at least 50% of supply
+        if vote_stats[1] < (total_supply / 2):
+            print(f"⚠️ THEORY: Success requires > 50% of Total Supply.")
+            print(f"   Required for 51%: {w3.from_wei(total_supply / 2, 'ether')}")
+            print(f"   Shortfall: {w3.from_wei((total_supply / 2) - vote_stats[1], 'ether')}")
+    except:
+        pass
+
+    state = dao_contract.functions.state(proposal_id).call()
+    # State Mapping: 3=Defeated, 4=Succeeded
+    if state == 3:
+        print(f"RESULT: DEFEATED (State {state})")
+        if total_cast < w3.from_wei(quorum_required, 'ether'):
+            print("CAUSE: Quorum not reached.")
+        elif against_v >= for_v:
+            print("CAUSE: Majority not reached (Against >= For).")
+        else:
+            print("CAUSE: Logic Error - Abstains may be counting as Against.")
+        raise Exception("Proposal failed. Audit your theory above.")
+    
+    elif state == 4:
+        print("RESULT: SUCCEEDED! Proceeding to Queue...")
+    else:
+        print(f"RESULT: Unexpected State ({state}).")
+    
+    print("="*50 + "\n")
+
     print("\n[Optimized] Entering Voting Period Wait (Block-based)...")
 
     # Use the helper to wait until the contract actually allows queueing
@@ -620,20 +714,66 @@ def run_scenario_optimized(dao_addr: str, treasury_addr: str, proposer_nonce: in
     res.gas_execute = receipt['gasUsed']
     res.tx_execute = receipt['transactionHash'].hex()
     tx_data = w3.eth.get_transaction(receipt['transactionHash'])
-    res.execution_path = "Timelock"
-    
     return res, proposer_nonce
 
 # --- MAIN RUNNER ---
 def main():
+    deployer_nonce = w3.eth.get_transaction_count(deployer_addr)
     if not w3.is_connected():
         print("Error: Could not connect to RPC URL.")
         return
 
-    # Nonce for the proposer accounts
+    # Nonce for the proposer & deloyer accounts
     proposer_nonce_vul = w3.eth.get_transaction_count(Account.from_key(VUL_PROPOSER_KEY).address) 
     proposer_nonce_opt = w3.eth.get_transaction_count(Account.from_key(OPT_PROPOSER_KEY).address)
+    
+    # --- GLOBAL DEPLOYER DELEGATION ---
+    # Using the two token addresses provided
+    GOV_TOKENS = {
+        "VUL_TOKEN": os.getenv("VUL_TOKEN_ADDR"),
+        "OPT_TOKEN": os.getenv("OPT_TOKEN_ADDR")
+    }
 
+    print(f"\n--- Initializing Global Whale Power for Deployer: {deployer_addr} ---")
+
+    for name, token_addr in GOV_TOKENS.items():
+        if not token_addr:
+            print(f"⚠️ {name} address missing.")
+            continue
+    
+        # Check if address is a contract
+        code = w3.eth.get_code(token_addr)
+        if code == b'' or code.hex() == '0x':
+            print(f"❌ ERROR: No contract found at {name} ({token_addr}). Check your .env or network.")
+            continue        
+        
+        token_contract = w3.eth.contract(address=token_addr, abi=TOKEN_ABI)
+        try:
+            # 1. Check if the deployer is already delegated to themselves
+            current_delegate = token_contract.functions.delegates(deployer_addr).call()
+    
+            if current_delegate.lower() != deployer_addr.lower():
+                print(f"Delegating {name} ({token_addr[:8]}...) to self...")
+        
+                # Prepare and send the delegation transaction
+                tx_func = token_contract.functions.delegate(deployer_addr)
+                receipt = send_tx(deployer_acct, tx_func, deployer_nonce)
+                deployer_nonce += 1
+                print(f"  > Success! Hash: {receipt['transactionHash'].hex()}")
+                # Brief pause to ensure the state change is indexed before we propose
+                time.sleep(2)
+            else:
+                print(f"Deployer already holds voting power for {name}. Skipping.")
+        except Exception as e:
+            print(f"⚠️ Could not call 'delegates' on {name}: {e}")
+            print("Attempting direct delegation without check...")
+            try:
+                tx_func = token_contract.functions.delegate(deployer_addr)
+                receipt = send_tx(deployer_acct, tx_func, deployer_nonce)
+                deployer_nonce += 1
+            except Exception as e2:
+                print(f"❌ Critical failure on {name}: {e2}")
+    print("--- All Tokens Active. Deployer now controls the 'Silent Majority'. ---\n")
 
     print(f"\n--- RUNNING SCENARIOS WITH {VOTER_COUNT} VOTERS ---")
 
